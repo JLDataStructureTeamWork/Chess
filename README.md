@@ -1,4 +1,4 @@
-# ProblemC-Connect6-
+# CHESS
 ## 团队成员<br>
 * [宋申苧](https://github.com/shenningsong)<br>
 * [王太源](https://github.com/RoseAlice2018)
