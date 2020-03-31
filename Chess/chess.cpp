@@ -30,7 +30,7 @@ int main()
   while (1)	//程序主循环
   {
     fflush(stdout);//不要删除此语句，否则程序会出问题
-    scanf("%s", message);//获取平台命令消息
+    scanf_s("%s", message);//获取平台命令消息
         //分析命令
     if (strcmp(message, "name?") == 0)//向对战平台发送队名
     {
@@ -42,7 +42,7 @@ int main()
     else if (strcmp(message, "new") == 0)//建立新棋局
     {
       int i, j;
-      scanf("%s", message);//获取己方执棋颜色
+      scanf_s("%s", message);//获取己方执棋颜色
       fflush(stdin);
       if (strcmp(message, "black") == 0)	computerSide = BLACK;  //执黑
       else  computerSide = WHITE;   //执白
@@ -70,7 +70,7 @@ int main()
     }
     else if (strcmp(message, "move") == 0)//行棋,本程序核心
     {
-      scanf("%s", message);//获取对手行棋着法
+      scanf_s("%s", message);//获取对手行棋着法
       fflush(stdin);
       step.first.x = message[0] - 'A';		step.first.y = message[1] - 'A';
       step.second.x = message[2] - 'A';		step.second.y = message[3] - 'A';
