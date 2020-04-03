@@ -16,7 +16,15 @@ struct Step { //步结构
   Point first, second;
   int value;
 };
+
 int Board[19][19];//存储棋盘信息，其元素值为 BLACK, WHITE, EMPTY 之一
+
+int MoveX[8] = { 0,0,-1,1,-1,-1,1,1 };
+int MoveY[8] = { -1,1,0,0,-1,1,-1,1 };//对应上,下,左,右,左上,左下,右上,右下
+
+Step machine(int Board[19][19],int computerSide) {
+
+}
 
 int main()
 {
@@ -37,7 +45,7 @@ int main()
     {
       fflush(stdin);
       /***********将"令狐冲"改为你的队名，不超过6个汉字或12个英文字母，否则无成绩************/
-      /*******/		printf("name 令狐冲\n");		/**只修改令狐冲，不要删除name空格****/
+      /*******/		printf("name 快乐第一位\n");		/**只修改令狐冲，不要删除name空格****/
       /***********将"令狐冲"改为你的队名，不超过6个汉字或12个英文字母，否则无成绩************/
     }
     else if (strcmp(message, "new") == 0)//建立新棋局
@@ -79,33 +87,18 @@ int main()
       Board[step.first.x][step.first.y] = 1 - computerSide;
       if (!(step.second.x == -1 && step.second.y == -1)) Board[step.second.x][step.second.y] = 1 - computerSide;
 
-      /**********************************************************************************************************/
-/***生成落子的坐标，保存在step结构中，第1子下在(step.first.x,step.first.y)，第2子下在(step.first.x,step.first.y)*****/
-/**************************************在下方填充代码，并替换我的示例代码*****************************************/
+    /**********************************************************************************************************/
+    /***生成落子的坐标，保存在step结构中，第1子下在(step.first.x,step.first.y)，第2子下在(step.first.x,step.first.y)*****/
+    /**************************************在下方填充代码，并替换我的示例代码*****************************************/
+      
+      
+      
+      step = machine(Board,computerSide);
 
-//生成第1子落子位置step.first.x和step.first.y
-      int x, y;
-      x = rand() % 19; y = rand() % 19;
-      while (Board[x][y] != EMPTY)
-      {
-        x = rand() % 19;	y = rand() % 19;
-      }
-      step.first.x = x;
-      step.first.y = y;
-      Board[step.first.x][step.first.y] = computerSide;
-
-      //生成第2子落子位置step.second.x和step.second.y	
-      x = rand() % 19;	y = rand() % 19;
-      while (Board[x][y] != EMPTY)
-      {
-        x = rand() % 19;	y = rand() % 19;
-      }
-      step.second.x = x;
-      step.second.y = y;
-      Board[step.second.x][step.second.y] = computerSide;
-    
-      /*****************************************在上面填充代码******************************************************/
-      /**********************************************************************************************************/
+      
+      
+    /*****************************************在上面填充代码******************************************************/
+    /**********************************************************************************************************/
 
       printf("move %c%c%c%c\n", step.first.x + 'A', step.first.y + 'A', step.second.x + 'A', step.second.y + 'A');//输出着法
     }
