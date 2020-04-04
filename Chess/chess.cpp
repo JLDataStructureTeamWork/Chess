@@ -22,6 +22,9 @@ int Board[19][19];//存储棋盘信息，其元素值为 BLACK, WHITE, EMPTY 之一
 int MoveX[8] = { 0,0,-1,1,-1,-1,1,1 };
 int MoveY[8] = { -1,1,0,0,-1,1,-1,1 };//对应上,下,左,右,左上,左下,右上,右下
 
+int EvalueFucation(int Board[19][19], int NumBlack,Point *Blacks,int NumWhite,Point *Whites) {//评价函数
+
+}
 Step machine(int Board[19][19],int computerSide) {
 
 }

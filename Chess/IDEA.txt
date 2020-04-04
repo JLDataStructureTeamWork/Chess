@@ -1,11 +1,22 @@
-﻿//---如果遇到git无法使用--//
+﻿//-----------chess函数功能------//
+(1)Step machine(int Board[19][19],int computerSide)
+main函数的接口；主要实现功能函数，只返回一个位置
+
+(2)int EvalueFucation(int Board[19][19], int NumBlack,Point *Blacks,int NumWhite,Point *Whites)
+Board当前游戏界面，不要改变
+NumBlacks、NumWhite黑白子个数
+Blacks、Whites黑白子位置
+
+
+//---如果遇到git无法使用--//
 点击操作-打开命令提示符-
 拉取：git pull origin master
 推送：git push -u origin master
 
 //----------网站-----------//
-//六子棋讲义：https://wenku.baidu.com/view/88a5b2c48bd63186bcebbc67.html
-//六子棋官网：http://www.connect6.org/
+六子棋讲义：https://wenku.baidu.com/view/88a5b2c48bd63186bcebbc67.html
+六子棋官网：http://www.connect6.org/
+
 //----------术语-----------//
 活五：五颗同色棋子相连，对手必须用两个棋子遮挡住
 眠五：五颗同色棋子相连，对手可用一颗棋子遮挡住
@@ -13,5 +24,9 @@
 活三：再下一颗就活四
 朦胧三：再下一颗只能形成眠四，下两颗形成活五
 活二，眠二：再下两颗形成活四眠四
-//-------------------------------//
-想法码在下面：
+
+//---------------想法-------------//
+博弈树与αβ剪枝
+启发式评价函数MinMax应用于深度比较大的树
+优于传统MinMax
+蒙特卡洛随机降低复杂度
