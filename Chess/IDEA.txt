@@ -2,15 +2,19 @@
 (1)Step machine(int Board[19][19],int computerSide)
 main函数的接口；主要实现功能函数，只返回一个位置
 
+---------(2)函数考虑删除，暂时保留--------------
 (2)int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,int EndY,int ComputerSide)
 主要功能：用于计算整个虚拟棋盘分数。
 VirtualBoard是认为虚拟棋盘，而非现实游戏界面
 BeginX/Y,EndX/Y为当前搜索范围。不必搜素19*19的整个棋盘。二是勾勒出现有棋子的举行轮廓，长宽再增加2。
 ComputerSide为我方执子颜色。
 
-(3)int Part_EvalueFucation(int VirtualBoard[19][19],Point FirstChess,Point SecondChess, int BeginX, int EndX, int BeginY, int EndY)
+(3)int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int ComputerSide)
 由于下两子之后，只涉及到包含这一子周围的路的变化。共有4个方向，每方向最多6路，故当前界面中的路只有4*6*2条路的分数发生变化
 无需计算整个界面的分数，计算相对分数即可简化计算。
+该函数的返回值代表了这两个棋子加入后对当前局面相对于己方的影响。
+其中的子函数PartScore_EvalueFucation用于计算针对单个交叉点的评价分数，具有避免一条路走两次的功能
+子函数IfNot_Road用于甄别从起始点到终点是否构成一条路
 
 
 //---如果遇到git无法使用--//

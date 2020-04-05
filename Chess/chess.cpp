@@ -100,8 +100,128 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
   }
   return Score;
 }
-int Part_EvalueFucation(int VirtualBoard[19][19],Point FirstChess,Point SecondChess, int BeginX, int EndX, int BeginY, int EndY) {//
+int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int &flag) {//判断是否是一条路
+  int num = 0;
+  if (BeginX < 0 || BeginX >= 19 || EndX < 0 || EndX >= 19) return -1;
+  if (BeginY < 0 || BeginY >= 19 || EndY < 0 || EndY >= 19) return -1;
+  //2代表还未遇到棋子，1白子，0黑子。
+  for (int i = BeginX; i <= EndX; i++) {
+    for (int j = BeginY; j <= EndY; j++) {
+      if (Board[i][j] == BLACK && flag == 1) return -1;
+      if (Board[i][j] == WHITE && flag == 0) return -1;
+      if (Board[i][j] == BLACK) {
+        num++;
+        flag = 0;
+      }
+      if (Board[i][j] == WHITE) {
+        num++;
+        flag = 1;
+      }
+    }
+  }
+  return num;
+}
+int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChess,int ComputerSide,int limit) {
 
+  int sum = 0;
+  int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//不同棋子数的路的条数
+  int NumOfEnemyRoad[7] = { 0,0,0,0,0,0,0 };
+  int ScoreOfRoad[7] = {};//不同棋子数的路的分数
+
+  for (int i = 0; i < 6; i++) {
+    Point Begin;
+    Begin.y = FirstChess.y - i;
+    Begin.x = FirstChess.x;
+    int flag = 2;
+    int num=IfNot_Road(Board, Begin.x, Begin.x, Begin.y, Begin.y + 5, flag);
+    if ( num== -1) continue;
+    if (limit == 1) {
+      if (Begin.x == LimitChess.x&&LimitChess.y >= Begin.y&&LimitChess.y <= Begin.y + 5) continue;
+    }
+    else {
+      if (flag == ComputerSide) {
+        NumOfMyRoad[num]++;
+      }
+      else {
+        NumOfEnemyRoad[num]++;
+      }
+    }
+  }
+  for (int i = 0; i < 6; i++) {
+    Point Begin;
+    Begin.y = FirstChess.y ;
+    Begin.x = FirstChess.x-i;
+    int flag = 2;
+    int num = IfNot_Road(Board, Begin.x, Begin.x+5, Begin.y, Begin.y, flag);
+    if (num == -1) continue;
+    if (limit == 1) {
+      if (Begin.y == LimitChess.y&&LimitChess.x >= Begin.x&&LimitChess.x <= Begin.x + 5) continue;
+    }
+    else {
+      if (flag == ComputerSide) {
+        NumOfMyRoad[num]++;
+      }
+      else {
+        NumOfEnemyRoad[num]++;
+      }
+    }
+  }
+  for (int i = 0; i < 6; i++) {
+    Point Begin;
+    Begin.y = FirstChess.y - i;
+    Begin.x = FirstChess.x + i;
+    int flag = 2;
+    int num = IfNot_Road(Board, Begin.x-5, Begin.x, Begin.y, Begin.y + 5, flag);
+    if (num == -1) continue;
+    if (limit == 1) {
+      if (LimitChess.y>=Begin.y&&LimitChess.y<=Begin.y+5&&LimitChess.x >= Begin.x-5&&LimitChess.x <= Begin.x ) continue;
+    }
+    else {
+      if (flag == ComputerSide) {
+        NumOfMyRoad[num]++;
+      }
+      else {
+        NumOfEnemyRoad[num]++;
+      }
+    }
+  }
+  for (int i = 0; i < 6; i++) {
+    Point Begin;
+    Begin.y = FirstChess.y + i;
+    Begin.x = FirstChess.x + i;
+    int flag = 2;
+    int num = IfNot_Road(Board, Begin.x-5, Begin.x, Begin.y-5, Begin.y , flag);
+    if (num == -1) continue;
+    if (limit == 1) {
+      if (LimitChess.y >= Begin.y-5&&LimitChess.y <= Begin.y  && LimitChess.x >= Begin.x - 5 && LimitChess.x <= Begin.x) continue;
+    }
+    else {
+      if (flag == ComputerSide) {
+        NumOfMyRoad[num]++;
+      }
+      else {
+        NumOfEnemyRoad[num]++;
+      }
+    }
+  }
+  int score;
+  for (int i = 0; i < 7; i++) {
+    score += NumOfMyRoad[i] * ScoreOfRoad[i] - NumOfEnemyRoad[i] * ScoreOfRoad[i];
+  }
+  return score;
+}
+int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int ComputerSide) {//
+  int VirtualBoard[19][19];
+  for (int i = 0; i < 19; i++) {
+    for (int j = 0; j < 19; j++) {
+      VirtualBoard[i][j] = Board[i][j];
+    }
+  }
+  VirtualBoard[FirstChess.x][FirstChess.y] =ComputerSide;
+  VirtualBoard[SecondChess.x][SecondChess.y] = ComputerSide;
+  int Before=PartScore_EvalueFucation(Board, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(Board, SecondChess, FirstChess, ComputerSide, 1);
+  int After= PartScore_EvalueFucation(VirtualBoard, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(VirtualBoard, SecondChess, FirstChess, ComputerSide, 1);
+  return After - Before;
 }
 Step machine(int Board[19][19],int computerSide) {
   int RowY[6] = { 0,1,2,3,4,5 };//行上路Y坐标移动
