@@ -28,15 +28,6 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
   int NumOfEnemyRoad[7]= { 0,0,0,0,0,0,0 };
   int ScoreOfRoad[7] = {};//不同棋子数的路的分数
   
-  int RowY[6] = { 0,1,2,3,4,5 };//行上路Y坐标移动
-  
-  int ColumnX[6] = { 0,1,2,3,4,5 };//列上路X坐标移动
-  
-  int LeftX[6] = {0,1,2,3,4,5};
-  int LeftY[6] = {0,-1,-2,-3,-4,-5};
-  
-  int RightX[6] = {0,1,2,3,4,5};
-  int RightY[6] = {0,1,2,3,4,5};
   for (int dir = 0; dir < 4; dir++) {
     for (int i = BeginX; i <= EndX; i++) {//对每行的路进行分析
       for (int j = BeginY; j <= EndY; j++) {
@@ -47,22 +38,22 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
           if (dir == 0) {
             if (j + 5 > EndY) continue;
             a = i;
-            b = j + RowY[k];
+            b = j + k;
           }
           else if (dir == 1) {
             if (i + 5 > EndX) continue;
-            a = i + ColumnX[k];
+            a = i +k;
             b = j;
           }
           else if (dir==2) {
             if (i + 5 > EndX || j - 5 < BeginY) continue;
-            a = i + LeftX[k];
-            b = j + LeftY[k];
+            a = i + k;
+            b = j - k;
           }
           else if (dir==3) {
             if (i + 5 > EndX || j + 5 > EndY) continue;
-            a = i + RightX[k];
-            b = j + RightY[k];
+            a = i + k;
+            b = j + k;
           }
           
           if ((VirtualBoard[a][b] == BLACK && flag == 2) || (VirtualBoard[a][b] == WHITE && flag == 1)) {//前后棋子颜色不同则此路作废
@@ -105,28 +96,29 @@ int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int
   if (BeginX < 0 || BeginX >= 19 || EndX < 0 || EndX >= 19) return -1;
   if (BeginY < 0 || BeginY >= 19 || EndY < 0 || EndY >= 19) return -1;
   //2代表还未遇到棋子，1白子，0黑子。
-  for (int i = BeginX; i <= EndX; i++) {
-    for (int j = BeginY; j <= EndY; j++) {
-      if (Board[i][j] == BLACK && flag == 1) return -1;
-      if (Board[i][j] == WHITE && flag == 0) return -1;
-      if (Board[i][j] == BLACK) {
-        num++;
-        flag = 0;
-      }
-      if (Board[i][j] == WHITE) {
-        num++;
-        flag = 1;
-      }
-    }
+  int i = BeginX, j = BeginY;
+  while(!(i==EndX&&j==EndY)){
+     if (Board[i][j] == EMPTY) continue;
+     if (Board[i][j] == BLACK && flag == 1) return -1;
+     if (Board[i][j] == WHITE && flag == 0) return -1;
+     if (Board[i][j] == BLACK) {
+       num++;
+       flag = 0;
+     }
+     if (Board[i][j] == WHITE) {
+       num++;
+       flag = 1;
+     }
+     if (i != EndX)i++;
+     if (j != EndY)j++;
   }
   return num;
 }
 int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChess,int ComputerSide,int limit) {
-
   int sum = 0;
   int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//不同棋子数的路的条数
   int NumOfEnemyRoad[7] = { 0,0,0,0,0,0,0 };
-  int ScoreOfRoad[7] = {};//不同棋子数的路的分数
+  int ScoreOfRoad[7] = {};//不同棋子数的路的分数!!!
 
   for (int i = 0; i < 6; i++) {
     Point Begin;
@@ -219,8 +211,10 @@ int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int
   }
   VirtualBoard[FirstChess.x][FirstChess.y] =ComputerSide;
   VirtualBoard[SecondChess.x][SecondChess.y] = ComputerSide;
+  
   int Before=PartScore_EvalueFucation(Board, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(Board, SecondChess, FirstChess, ComputerSide, 1);
   int After= PartScore_EvalueFucation(VirtualBoard, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(VirtualBoard, SecondChess, FirstChess, ComputerSide, 1);
+  
   return After - Before;
 }
 Step machine(int Board[19][19],int computerSide) {
