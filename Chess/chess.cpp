@@ -110,9 +110,9 @@ int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int
   if (BeginY < 0 || BeginY >= 19 || EndY < 0 || EndY >= 19) return -1;
   //2代表还未遇到棋子，1白子，0黑子。
   int i = BeginX, j = BeginY;
-  while(!(i==EndX&&j==EndY)){
+  while(1){
      if (Board[i][j] == EMPTY) continue;
-     if (Board[i][j] == BLACK && flag == 1) return -1;
+     if (Board[i][j] == BLACK && flag == 1) return -1;//返回-1代表不是路
      if (Board[i][j] == WHITE && flag == 0) return -1;
      if (Board[i][j] == BLACK) {
        num++;
@@ -122,10 +122,11 @@ int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int
        num++;
        flag = 1;
      }
+     if (i == EndX && j == EndY) break;
      if (i != EndX)i++;
      if (j != EndY)j++;
   }
-  return num;
+  return num;//返回棋子个数
 }
 int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChess,int ComputerSide,int limit) {
   int sum = 0;
