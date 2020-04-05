@@ -2,10 +2,15 @@
 (1)Step machine(int Board[19][19],int computerSide)
 main函数的接口；主要实现功能函数，只返回一个位置
 
-(2)int EvalueFucation(int Board[19][19], int NumBlack,Point *Blacks,int NumWhite,Point *Whites)
-Board当前游戏界面，不要改变
-NumBlacks、NumWhite黑白子个数
-Blacks、Whites黑白子位置
+(2)int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,int EndY,int ComputerSide)
+主要功能：用于计算整个虚拟棋盘分数。
+VirtualBoard是认为虚拟棋盘，而非现实游戏界面
+BeginX/Y,EndX/Y为当前搜索范围。不必搜素19*19的整个棋盘。二是勾勒出现有棋子的举行轮廓，长宽再增加2。
+ComputerSide为我方执子颜色。
+
+(3)int Part_EvalueFucation(int VirtualBoard[19][19],Point FirstChess,Point SecondChess, int BeginX, int EndX, int BeginY, int EndY)
+由于下两子之后，只涉及到包含这一子周围的路的变化。共有4个方向，每方向最多6路，故当前界面中的路只有4*6*2条路的分数发生变化
+无需计算整个界面的分数，计算相对分数即可简化计算。
 
 
 //---如果遇到git无法使用--//
@@ -41,10 +46,15 @@ Blacks、Whites黑白子位置
 id有子为1，无子为0，id是棋形01二进制转化为10进制，不同的length，id一定不同。
 对棋盘每个交叉点进行编号，1，2，3....
 form为该棋形中编号最小的点
+(3)启发式搜索
+威胁判断：当形成3个以及以上的威胁就能赢，威胁是一方需要下t颗棋子避免另一方连六
+威胁判断可以大大减少对博弈树的分析：如果有三威胁认输，双威胁接下来两子均去减少双威胁，单威胁一子去避免，另一子再去分析。
+(4)脱离战场策略
+最外侧棋子圈定出矩形，长和宽再向外扩充两个单位，作为当前搜索范围，对精度影响很小。
+(5)只对路进行分析，棋形太多了无法面面俱到。先判断是否是路，在对路进行分析打分。
+博弈树与αβ剪枝
 
-(3)博弈树与αβ剪枝
 
-
-(4)启发式评价函数MinMax应用于深度比较大的树
+启发式评价函数MinMax应用于深度比较大的树
 优于传统MinMax
-(5)蒙特卡洛随机降低复杂度
+蒙特卡洛随机降低复杂度
