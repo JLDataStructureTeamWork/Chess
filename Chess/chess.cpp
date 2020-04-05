@@ -91,6 +91,19 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
   }
   return Score;
 }
+void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {
+  for (int i = 0; i < 19; i++) {
+    for (int j = 0; j < 19; j++) {
+      if (Board[i][j] != EMPTY) {
+        if (i < BeginX) BeginX = i;
+        if (i > EndX)EndX = i;
+        if (j < BeginY)BeginY = j;
+        if (j > EndY)EndY = j;
+      }
+    }
+  }
+  return;
+}
 int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int &flag) {//判断是否是一条路
   int num = 0;
   if (BeginX < 0 || BeginX >= 19 || EndX < 0 || EndX >= 19) return -1;

@@ -16,6 +16,8 @@ ComputerSide为我方执子颜色。
 其中的子函数PartScore_EvalueFucation用于计算针对单个交叉点的评价分数，具有避免一条路走两次的功能
 子函数IfNot_Road用于甄别从起始点到终点是否构成一条路
 
+(4)void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY)
+传递引用，进行界面边界的划定。
 
 //---如果遇到git无法使用--//
 点击操作-打开命令提示符-
@@ -61,7 +63,7 @@ form为该棋形中编号最小的点
 由于评分是己方-敌方，可以考虑不用MinMax算法
 （7）MinMax算法：
 
-
-（7）启发式评价函数MinMax应用于深度比较大的树
+(8)考虑在递归博弈树之前增加分支判断，来简化搜索。
+（）启发式评价函数MinMax应用于深度比较大的树
 优于传统MinMax
 蒙特卡洛随机降低复杂度
