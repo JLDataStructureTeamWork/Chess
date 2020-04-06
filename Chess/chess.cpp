@@ -232,15 +232,16 @@ int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int
   return After - Before;
 }
 Step machine(int Board[19][19],int computerSide) {
-  int RowY[6] = { 0,1,2,3,4,5 };//行上路Y坐标移动
+  int BeginX = 20, BeginY = 20;
+  int EndX = -1, EndY = -1;
+  BoardRange(Board, BeginX, EndX, BeginY, EndY);//首先探明界面范围
+  for (int i = 1; i <= 2; i++) {//将范围扩大两个单位，得到需要分析落子的区域
+    if (BeginX != 0) BeginX--;
+    if (BeginY != 0) BeginY--;
+    if (EndX != 18) EndX++;
+    if (EndY != 18) EndY++;
+  }
 
-  int ColumnX[6] = { 0,1,2,3,4,5 };//列上路X坐标移动
-
-  int LeftX[6] = { 0,1,2,3,4,5 };
-  int LeftY[6] = { 0,-1,-2,-3,-4,-5 };
-
-  int RightX[6] = { 0,1,2,3,4,5 };
-  int RightY[6] = { 0,1,2,3,4,5 };
 }
 
 int main()
