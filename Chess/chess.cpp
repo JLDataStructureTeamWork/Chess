@@ -295,7 +295,14 @@ int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int
   return After - Before;
 }
 
-Step machine(int Board[19][19],int computerSide) {
+Step machine(int TureBoard[19][19],int computerSide) {
+  int Board[19][19];//为了不改变主函数中的界面
+  for (int i = 0; i < 19; i++) {
+    for (int j = 0; j < 19; j++) {
+      Board[i][j] = TureBoard[i][j];
+    }
+  }
+  Step NextTwoStep;
   int BeginX = 20, BeginY = 20;
   int EndX = -1, EndY = -1;
   BoardRange(Board, BeginX, EndX, BeginY, EndY);//首先探明界面范围
@@ -305,6 +312,22 @@ Step machine(int Board[19][19],int computerSide) {
     if (EndX != 18) EndX++;
     if (EndY != 18) EndY++;
   }
+
+  Step PreSeekStep;
+  int FirstChess_Flag = 0;//1代表一颗棋子已经确定
+  PreSeekStep=PreSeek(Board, BeginX, EndX, BeginY, EndY);//使用博弈树之前进行前期扫描，判断是否有活四活五等必须落子的情况
+  if (PreSeekStep.first.x != -1) {
+    NextTwoStep.first.x = PreSeekStep.first.x;
+    NextTwoStep.first.y = PreSeekStep.first.y;
+    FirstChess_Flag = 1;
+  }
+  if (PreSeekStep.second.x != -1) {
+    NextTwoStep.second.x = PreSeekStep.second.x;
+    NextTwoStep.second.y = PreSeekStep.second.y;
+    return NextTwoStep;//两颗棋子均确定则直接返回
+  }
+  //----------博弈树部分------------//
+  //对界面进行分析
 
 }
 
