@@ -88,6 +88,95 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
   }
   return Score;
 }
+int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY, int &flag, int dir) {//判断是否是一条路
+  int num = 0;
+  int MoveRoadX[4] = { 0,1,1,1 };
+  int MoveRoadY[4] = { 1,0,-1,1 };
+  if (BeginX < 0 || BeginX >= 19 || EndX < 0 || EndX >= 19) return -1;
+  if (BeginY < 0 || BeginY >= 19 || EndY < 0 || EndY >= 19) return -1;
+  //2代表还未遇到棋子，1白子，0黑子。
+  int a = BeginX, b = BeginY;
+  for (int i = 0; i < 6; i++) {
+    if (i != 0) {//不变路开头点的坐标
+      a += MoveRoadX[dir];
+      b += MoveRoadY[dir];
+    }
+    if (Board[a][b] == EMPTY) continue;
+    if (Board[a][b] == BLACK && flag == 1) return -1;//返回-1代表不是路
+    if (Board[a][b] == WHITE && flag == 0) return -1;
+    if (Board[a][b] == BLACK) {
+      num++;
+      flag = 0;
+    }
+    if (Board[a][b] == WHITE) {
+      num++;
+      flag = 1;
+    }
+  }
+  return num;//返回棋子个数
+}
+Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY,int dir) {//寻找一条路上有>=4个棋子的空位
+  int MoveRoadX[4] = { 0,1,1,1 };//用于路上的移动，并判断哪一点是空
+  int MoveRoadY[4] = { 1,0,-1,1 };
+  
+  Step ReturnEmpty;
+  ReturnEmpty.first.x = -1;
+  ReturnEmpty.first.y = -1;
+  ReturnEmpty.second.x = -1;
+  ReturnEmpty.second.y = -1;
+  int a = BeginX, b = BeginY;
+  for (int i = 0; i < 6; i++) {
+    if (i != 0) {
+      a += MoveRoadX[dir];
+      b += MoveRoadY[dir];
+    }
+    if (Board[a][b] != EMPTY) {
+      if (ReturnEmpty.first.x != -1) {
+        ReturnEmpty.second.x = a;
+        ReturnEmpty.second.y = b;
+      }
+      else {
+        ReturnEmpty.first.x = a;
+        ReturnEmpty.first.y = b;
+      }
+    }
+  }
+  return ReturnEmpty;
+}
+Step PreSeek(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY) {//判断里面的所有路是否有活四，活五，眠五
+  for (int i = BeginX; i <= EndX; i++) {
+    for (int j = BeginY; j <= EndY; j++) {
+      int num;
+      int flag = 2;
+      num = IfNot_Road(Board, i, i, j, j + 5, flag, 0);
+      if (flag != 2) {//以该点为起点的行上的路是路
+        if (num >= 4) {
+          return PreSeek_ReturnEmpty(Board, i, j, 0);
+        }
+      }
+      num = IfNot_Road(Board, i, i, j, j + 5, flag, 1);
+      if (flag != 2) {//以该点为起点的列上的路是路
+        if (num >= 4) {
+          return PreSeek_ReturnEmpty(Board, i, j, 1);
+        }
+      }
+      num = IfNot_Road(Board, i, i+5, j, j - 5, flag, 2);
+      if (flag != 2) {//以该点为起点的向左下斜的路是路
+        if (num >= 4) {
+          return PreSeek_ReturnEmpty(Board, i, j, 2);
+        }
+      }
+      num = IfNot_Road(Board, i, i+5, j, j + 5, flag, 3);
+      if (flag != 2) {//以该点为起点的向右下斜的路是路
+        if (num >= 4) {
+          return PreSeek_ReturnEmpty(Board, i, j, 3);
+        }
+      }
+    }
+  }
+  return;
+}
+
 void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {//20,-1,20,-1//已测试
   for (int i = 0; i < 19; i++) {
     for (int j = 0; j < 19; j++) {
@@ -101,33 +190,7 @@ void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {
   }
   return;
 }
-int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int &flag,int dir) {//判断是否是一条路
-  int num = 0;
-  int MoveRoadX[4] = {0,1,1,1};
-  int MoveRoadY[4] = {1,0,-1,1};
-  if (BeginX < 0 || BeginX >= 19 || EndX < 0 || EndX >= 19) return -1;
-  if (BeginY < 0 || BeginY >= 19 || EndY < 0 || EndY >= 19) return -1;
-  //2代表还未遇到棋子，1白子，0黑子。
-  int a = BeginX, b = BeginY;
-  for(int i=0;i<6;i++){
-    if (i != 0) {//不变路开头点的坐标
-      a += MoveRoadX[dir];
-      b += MoveRoadY[dir];
-    }
-     if (Board[a][b] == EMPTY) continue;
-     if (Board[a][b] == BLACK && flag == 1) return -1;//返回-1代表不是路
-     if (Board[a][b] == WHITE && flag == 0) return -1;
-     if (Board[a][b] == BLACK) {
-       num++;
-       flag = 0;
-     }
-     if (Board[a][b] == WHITE) {
-       num++;
-       flag = 1;
-     }
-  }
-  return num;//返回棋子个数
-}
+
 int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChess,int ComputerSide,int limit) {
   int sum = 0;
   int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//不同棋子数的路的条数
@@ -231,6 +294,7 @@ int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int
   
   return After - Before;
 }
+
 Step machine(int Board[19][19],int computerSide) {
   int BeginX = 20, BeginY = 20;
   int EndX = -1, EndY = -1;

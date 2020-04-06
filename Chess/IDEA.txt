@@ -21,6 +21,10 @@ ComputerSide为我方执子颜色。
 (4)void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY)
 传递引用，进行界面边界的划定。
 
+(5)Step PreSeek(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY)
+在递归之前，用于判断界面中是否有活四活五，可直接下判断，不用博弈树。
+(6)Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY,int dir)
+是(5)的子函数
 //---如果遇到git无法使用--//
 点击操作-打开命令提示符-
 拉取：git pull origin master
@@ -63,9 +67,10 @@ form为该棋形中编号最小的点
 (6)博弈树与αβ剪枝
 对当前棋面所有可能落两子的情况进行评分，选择前width个情况，是博弈树的宽度。可以考虑应用局部轮廓矩形的方法，降低搜索范围。
 由于评分是己方-敌方，可以考虑不用MinMax算法
-（7）MinMax算法：
-
+(7)MinMax算法：
+(8)应用哈希表：对已经评估过的函数不再进行重复评估。
 (8)考虑在递归博弈树之前增加分支判断，来简化搜索。
+(9)
 （）启发式评价函数MinMax应用于深度比较大的树
 优于传统MinMax
 蒙特卡洛随机降低复杂度
