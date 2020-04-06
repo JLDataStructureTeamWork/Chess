@@ -3,6 +3,8 @@
 main函数的接口；主要实现功能函数，只返回一个位置
 
 ---------(2)函数考虑删除，暂时保留--------------
+//函数一定要经过测试！！
+//不经测试很难查找原因！！
 (2)int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,int EndY,int ComputerSide)
 主要功能：用于计算整个虚拟棋盘分数。
 VirtualBoard是认为虚拟棋盘，而非现实游戏界面

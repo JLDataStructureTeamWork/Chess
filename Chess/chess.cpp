@@ -19,9 +19,6 @@ struct Step { //步结构
 
 int Board[19][19];//存储棋盘信息，其元素值为 BLACK, WHITE, EMPTY 之一
 
-int MoveX[8] = { 0,0,-1,1,-1,-1,1,1 };
-int MoveY[8] = { -1,1,0,0,-1,1,-1,1 };//对应上,下,左,右,左上,左下,右上,右下
-
 int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,int EndY,int ComputerSide) {//全局评价函数
   
   int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//不同棋子数的路的条数
@@ -91,7 +88,7 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
   }
   return Score;
 }
-void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {
+void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {//20,-1,20,-1//已测试
   for (int i = 0; i < 19; i++) {
     for (int j = 0; j < 19; j++) {
       if (Board[i][j] != EMPTY) {
@@ -104,27 +101,30 @@ void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {
   }
   return;
 }
-int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int &flag) {//判断是否是一条路
+int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int &flag,int dir) {//判断是否是一条路
   int num = 0;
+  int MoveRoadX[4] = {0,1,1,1};
+  int MoveRoadY[4] = {1,0,-1,1};
   if (BeginX < 0 || BeginX >= 19 || EndX < 0 || EndX >= 19) return -1;
   if (BeginY < 0 || BeginY >= 19 || EndY < 0 || EndY >= 19) return -1;
   //2代表还未遇到棋子，1白子，0黑子。
-  int i = BeginX, j = BeginY;
-  while(1){
-     if (Board[i][j] == EMPTY) continue;
-     if (Board[i][j] == BLACK && flag == 1) return -1;//返回-1代表不是路
-     if (Board[i][j] == WHITE && flag == 0) return -1;
-     if (Board[i][j] == BLACK) {
+  int a = BeginX, b = BeginY;
+  for(int i=0;i<6;i++){
+    if (i != 0) {//不变路开头点的坐标
+      a += MoveRoadX[dir];
+      b += MoveRoadY[dir];
+    }
+     if (Board[a][b] == EMPTY) continue;
+     if (Board[a][b] == BLACK && flag == 1) return -1;//返回-1代表不是路
+     if (Board[a][b] == WHITE && flag == 0) return -1;
+     if (Board[a][b] == BLACK) {
        num++;
        flag = 0;
      }
-     if (Board[i][j] == WHITE) {
+     if (Board[a][b] == WHITE) {
        num++;
        flag = 1;
      }
-     if (i == EndX && j == EndY) break;
-     if (i != EndX)i++;
-     if (j != EndY)j++;
   }
   return num;//返回棋子个数
 }
@@ -134,12 +134,12 @@ int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChe
   int NumOfEnemyRoad[7] = { 0,0,0,0,0,0,0 };
   int ScoreOfRoad[7] = {};//不同棋子数的路的分数!!!
 
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 6; i++) {//行上的路
     Point Begin;
     Begin.y = FirstChess.y - i;
     Begin.x = FirstChess.x;
     int flag = 2;
-    int num=IfNot_Road(Board, Begin.x, Begin.x, Begin.y, Begin.y + 5, flag);
+    int num=IfNot_Road(Board, Begin.x, Begin.x, Begin.y, Begin.y + 5, flag,0);
     if ( num== -1) continue;
     if (limit == 1) {
       if (Begin.x == LimitChess.x&&LimitChess.y >= Begin.y&&LimitChess.y <= Begin.y + 5) continue;
@@ -153,12 +153,12 @@ int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChe
       }
     }
   }
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 6; i++) {//列上的路
     Point Begin;
     Begin.y = FirstChess.y ;
     Begin.x = FirstChess.x-i;
     int flag = 2;
-    int num = IfNot_Road(Board, Begin.x, Begin.x+5, Begin.y, Begin.y, flag);
+    int num = IfNot_Road(Board, Begin.x, Begin.x+5, Begin.y, Begin.y, flag,1);
     if (num == -1) continue;
     if (limit == 1) {
       if (Begin.y == LimitChess.y&&LimitChess.x >= Begin.x&&LimitChess.x <= Begin.x + 5) continue;
@@ -172,12 +172,12 @@ int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChe
       }
     }
   }
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 6; i++) {//向左下斜
     Point Begin;
-    Begin.y = FirstChess.y - i;
-    Begin.x = FirstChess.x + i;
+    Begin.y = FirstChess.y + i;
+    Begin.x = FirstChess.x - i;
     int flag = 2;
-    int num = IfNot_Road(Board, Begin.x-5, Begin.x, Begin.y, Begin.y + 5, flag);
+    int num = IfNot_Road(Board, Begin.x, Begin.x+5, Begin.y, Begin.y - 5, flag,2);
     if (num == -1) continue;
     if (limit == 1) {
       if (LimitChess.y>=Begin.y&&LimitChess.y<=Begin.y+5&&LimitChess.x >= Begin.x-5&&LimitChess.x <= Begin.x ) continue;
@@ -191,12 +191,12 @@ int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChe
       }
     }
   }
-  for (int i = 0; i < 6; i++) {
+  for (int i = 0; i < 6; i++) {//向右下斜
     Point Begin;
-    Begin.y = FirstChess.y + i;
-    Begin.x = FirstChess.x + i;
+    Begin.y = FirstChess.y - i;
+    Begin.x = FirstChess.x - i;
     int flag = 2;
-    int num = IfNot_Road(Board, Begin.x-5, Begin.x, Begin.y-5, Begin.y , flag);
+    int num = IfNot_Road(Board, Begin.x, Begin.x+5, Begin.y, Begin.y+5 , flag,3);
     if (num == -1) continue;
     if (limit == 1) {
       if (LimitChess.y >= Begin.y-5&&LimitChess.y <= Begin.y  && LimitChess.x >= Begin.x - 5 && LimitChess.x <= Begin.x) continue;
