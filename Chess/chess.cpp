@@ -290,25 +290,29 @@ int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int
   
   int Before=PartScore_EvalueFucation(Board, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(Board, SecondChess, FirstChess, ComputerSide, 1);
   
-  Board[FirstChess.x][FirstChess.y] = ComputerSide;
+  Board[FirstChess.x][FirstChess.y] = ComputerSide;//改变原数组
   Board[SecondChess.x][SecondChess.y] = ComputerSide;
+  
   int After= PartScore_EvalueFucation(Board, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(Board, SecondChess, FirstChess, ComputerSide, 1);
-  Board[FirstChess.x][FirstChess.y] = Score1;
+  
+  Board[FirstChess.x][FirstChess.y] = Score1;//恢复原数组
   Board[SecondChess.x][SecondChess.y] = Score2;
   
-  return After - Before;
+  return After - Before;//返回局部评分
 }
 
 
 queue<Step> GenerateSon(int Board[19][19],int BeginX,int EndX,int BeginY,int EndY) {//产生子节点队列函数
   
 }
+
 Step GetFrontNode(queue<Step> Son) {//得到队列头节点并pop掉
   Step ReturnNode;
   ReturnNode = Son.front();
   Son.pop();
   return ReturnNode;
 }
+
 int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth) {//负极大值搜索
   int value,BestValue = -INFINITY;
   Step CurrentNode;
@@ -316,10 +320,10 @@ int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth) {//负极大值搜索
     
   }
   queue<Step> Son;
- // Son=GenerateSon();
+  //Son=GenerateSon();
   while (!Son.empty()) {
     CurrentNode = GetFrontNode(Son);
-    value = -NegaMax_AlphaBeta(CurrentNode, -Beta,-Alpha,depth - 1);
+    value = -NegaMax_AlphaBeta(CurrentNode, -Beta,-Alpha,depth - 1);//论文中的方法，简洁了代码，但没看懂(
     if (value >= Alpha) {
       Alpha = value;
     }
