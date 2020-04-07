@@ -1,4 +1,9 @@
-﻿//-----------chess.cpp中的函数------//
+﻿//-----------重点思路-----------//
+(1)点的确定以及每个可能棋局的生成：！！使用优先队列
+步骤：
+1、对于搜索范围之内的每个空点，进行评分。选择评分前W个点继续。
+2、分别对前W个点进行安放，对于这W个可能性进行落第二个点。选择前B个局面作为儿子结点
+//-----------chess.cpp中的函数------//
 (1)Step machine(int Board[19][19],int computerSide)
 main函数的接口；主要实现功能函数，只返回一个位置
 
@@ -21,12 +26,12 @@ ComputerSide为我方执子颜色。
 (4)void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY)
 传递引用，进行界面边界的划定。
 
-(5)Step PreSeek(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY)
+(5)Step PreSeek(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY)//需要更新扩展到6-8窗口法
 在递归之前，用于判断界面中是否有活四活五，可直接下判断，不用博弈树。
 (6)Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY,int dir)
 是(5)的子函数
-(7)int NegaMax(Step step, int depth)
-最大最小值搜索的进阶版本
+(7)int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth)
+最大最小值搜索的进阶版本，且具有αβ剪枝功能
 自下而上返回当前节点的分数
 深度确定，从叶子节点开始进行估值
 //---如果遇到git无法使用--//
