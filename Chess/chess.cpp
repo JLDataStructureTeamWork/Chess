@@ -1,10 +1,13 @@
 #define _CRT_SECURE_NO_WARNINGS
+#include<queue>
+#include<algorithm>
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
 #include<math.h>
 #include<time.h>
-
+#include<iostream>
+using namespace std;
 #define BLACK 0
 #define WHITE 1
 #define EMPTY 2
@@ -294,7 +297,35 @@ int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int
   
   return After - Before;
 }
+void EvalueFucation() {//对博弈树节点评估函数
 
+}
+queue<Step> GenerateSon() {//产生子节点队列函数
+
+}
+Step GetFrontNode(queue<Step> Son) {//得到队列头节点并pop掉
+  Step ReturnNode;
+  ReturnNode = Son.front();
+  Son.pop();
+  return ReturnNode;
+}
+int NegaMax(Step step, int depth) {//负极大值搜索
+  int value,BestValue = -INFINITY;
+  Step CurrentNode;
+  if (depth <= 0) {
+    EvalueFucation();
+  }
+  queue<Step> Son;
+  Son=GenerateSon();
+  while (!Son.empty()) {
+    CurrentNode = GetFrontNode(Son);
+    value = -NegaMax(CurrentNode, depth - 1);
+    if (value >= BestValue) {
+      BestValue = value;
+    }
+  }
+  return BestValue;
+}
 Step machine(int TureBoard[19][19],int computerSide) {
   int Board[19][19];//为了不改变主函数中的界面
   for (int i = 0; i < 19; i++) {
@@ -328,6 +359,7 @@ Step machine(int TureBoard[19][19],int computerSide) {
   }
   //----------博弈树部分------------//
   //对界面进行分析
+
 
 }
 
