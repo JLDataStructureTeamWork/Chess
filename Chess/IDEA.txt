@@ -21,6 +21,9 @@ ComputerSide为我方执子颜色。
 无需计算整个界面的分数，计算相对分数即可简化计算。
 该函数的返回值代表了这两个棋子加入后对当前局面相对于己方的影响。
 其中的子函数PartScore_EvalueFucation用于计算针对单个交叉点的评价分数，具有避免一条路走两次的功能
+
+IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY, int &flag, int dir)
+形参分别代表预计形成路的起点坐标和终点坐标，flag是标志路的颜色，dir是路的方向
 子函数IfNot_Road用于甄别从起始点到终点是否构成一条路
 
 (4)void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY)
