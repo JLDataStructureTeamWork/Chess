@@ -11,7 +11,10 @@ using namespace std;
 #define BLACK 0
 #define WHITE 1
 #define EMPTY 2
-
+int RangeBeginX = 0;//目前搜索范围
+int RangeBeginY = 0; 
+int RangeEndX = 0; 
+int RangeEndY = 0;
 struct Point { //点结构
   int x, y;
 };
@@ -91,12 +94,12 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
   }
   return Score;
 }
-int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY, int &flag, int dir,int limit,Point LimitChess) {//判断是否是一条路
+int IfNot_Road(int Board[19][19], int BeginX, int BeginY,int &flag, int dir,int limit,Point LimitChess) {//判断是否是一条路
   int num = 0;//如果是路，其中的棋子个数
   int MoveRoadX[4] = { 0,1,1,1 };//方向数组
   int MoveRoadY[4] = { 1,0,-1,1 };
-  if (BeginX < 0 || BeginX >= 19 || EndX < 0 || EndX >= 19) return -1;//以搜索范围内所有格子为起点，扩大了搜索范围
-  if (BeginY < 0 || BeginY >= 19 || EndY < 0 || EndY >= 19) return -1;//增加本函数形参RangeBeginX/Y、RangeEndX/Y,目前的EndBegin是路的起点终点
+  if (BeginX < RangeBeginX || BeginX >RangeEndX || BeginX+5*MoveRoadX[dir] < RangeBeginX || BeginX+5*MoveRoadX[dir] > RangeEndX) return -1;//以搜索范围内所有格子为起点，扩大了搜索范围
+  if (BeginY < RangeBeginY || BeginY >RangeEndY || BeginY+5 * MoveRoadX[dir]< RangeBeginY || BeginY + 5 * MoveRoadX[dir] >RangeEndY) return -1;//增加本函数形参RangeBeginX/Y、RangeEndX/Y,目前的EndBegin是路的起点终点
   //2代表还未遇到棋子，1白子，0黑子。
   int a = BeginX, b = BeginY;
   for (int i = 0; i < 6; i++) {
@@ -117,7 +120,8 @@ int IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY, in
   }
   return num;//返回棋子个数
 }
-Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY,int dir,int WillWin,int ComputerSide) {//寻找一条路上有>=4个棋子的空位
+Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY, int RangeBeginX, int RangeBeginY, int RangeEndX, int RangeEndY
+  ,int dir,int WillWin,int ComputerSide) {//寻找一条路上有>=4个棋子的空位
 
   int MoveRoadX[4] = { 0,1,1,1 };//用于路上的移动
   int MoveRoadY[4] = { 1,0,-1,1 };//注意：此函数输入的已经确认是num>=4一条路
@@ -183,7 +187,7 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY,int dir,int W
     Point Fake;
     Fake.x = -1;
     Fake.y = -1;
-    num = IfNot_Road(Board, FirstNotEmpty.x, FirstNotEmpty.x + 5 * MoveRoadX[dir], FirstNotEmpty.y, FirstNotEmpty.y + 5 * MoveRoadY[dir], flag, dir,0,Fake);
+    num = IfNot_Road(Board, FirstNotEmpty.x,  FirstNotEmpty.y,flag, dir,0,Fake);
     if (num >= 4) {
       for (int i = 0; i < 6; i++) {//找第一个空位置，且与敌方子相邻。
         a = FirstNotEmpty.x + i * MoveRoadX[dir];
@@ -222,14 +226,14 @@ Step PreSeek(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int C
         Point Fake;
         Fake.x = -1;
         Fake.y = -1;
-        num = IfNot_Road(Board, i, i + 5 * MoveRoadX[k], j, j + 5 * MoveRoadY[k], flag, k,0,Fake);
+        num = IfNot_Road(Board, i, j,flag, k,0,Fake);
         if (num == -1||num<4) continue;
         if (ComputerSide==flag) {//己方连四或连五
-          ReturnStep=PreSeek_ReturnEmpty(Board, i, j, k, 1,ComputerSide);
+          ReturnStep=PreSeek_ReturnEmpty(Board, i, j,  RangeBeginX, RangeBeginY, RangeEndX, RangeEndY ,k, 1,ComputerSide);
           return ReturnStep;
         }
         else {//敌方连四或连五
-          ReturnStep = PreSeek_ReturnEmpty(Board, i, j, k, 0,ComputerSide);
+          ReturnStep = PreSeek_ReturnEmpty(Board, i, j,  RangeBeginX,  RangeBeginY,  RangeEndX,  RangeEndY,k, 0,ComputerSide);
           return ReturnStep;
         }
       }
@@ -259,13 +263,13 @@ int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChe
   int ScoreOfRoad[7] = {};//不同棋子数的路的分数!!!
   int MoveRoadX[4] = { 0,1,1,1 };
   int MoveRoadY[4] = { 1,0,-1,1 };
-  for (int k = 0; k < 4; k++) {
+  for (int dir = 0; dir < 4; dir++) {
     for (int i = 0; i < 6; i++) {//行上的路
       Point Begin;
-      Begin.y = FirstChess.y - i * MoveRoadY[k];//定起点，与正常路遍历的方向相反
-      Begin.x = FirstChess.x - i * MoveRoadX[k];
+      Begin.y = FirstChess.y - i * MoveRoadY[dir];//定起点，与正常路遍历的方向相反
+      Begin.x = FirstChess.x - i * MoveRoadX[dir];
       int flag = 2;
-      int num = IfNot_Road(Board, Begin.x, Begin.x+5*MoveRoadX[k], Begin.y, Begin.y + 5*MoveRoadY[k], flag, k,limit,LimitChess);
+      int num = IfNot_Road(Board, Begin.x, Begin.y, flag, dir,limit,LimitChess);
       if (num == -1) continue;
       else {
         if (flag == ComputerSide) {
