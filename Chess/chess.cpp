@@ -11,10 +11,14 @@ using namespace std;
 #define BLACK 0
 #define WHITE 1
 #define EMPTY 2
+
 int RangeBeginX = 0;//目前搜索范围
 int RangeBeginY = 0; 
 int RangeEndX = 0; 
 int RangeEndY = 0;
+int MoveRoadX[4] = { 0,1,1,1 };
+int MoveRoadY[4] = { 1,0,-1,1 };
+
 struct Point { //点结构
   int x, y;
 };
@@ -96,8 +100,7 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
 }
 int IfNot_Road(int Board[19][19], int BeginX, int BeginY,int &flag, int dir,int limit,Point LimitChess) {//判断是否是一条路
   int num = 0;//如果是路，其中的棋子个数
-  int MoveRoadX[4] = { 0,1,1,1 };//方向数组
-  int MoveRoadY[4] = { 1,0,-1,1 };
+
   if (BeginX < RangeBeginX || BeginX >RangeEndX || BeginX+5*MoveRoadX[dir] < RangeBeginX || BeginX+5*MoveRoadX[dir] > RangeEndX) return -1;//以搜索范围内所有格子为起点，扩大了搜索范围
   if (BeginY < RangeBeginY || BeginY >RangeEndY || BeginY+5 * MoveRoadX[dir]< RangeBeginY || BeginY + 5 * MoveRoadX[dir] >RangeEndY) return -1;//增加本函数形参RangeBeginX/Y、RangeEndX/Y,目前的EndBegin是路的起点终点
   //2代表还未遇到棋子，1白子，0黑子。
@@ -120,11 +123,7 @@ int IfNot_Road(int Board[19][19], int BeginX, int BeginY,int &flag, int dir,int 
   }
   return num;//返回棋子个数
 }
-Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY, int RangeBeginX, int RangeBeginY, int RangeEndX, int RangeEndY
-  ,int dir,int WillWin,int ComputerSide) {//寻找一条路上有>=4个棋子的空位
-
-  int MoveRoadX[4] = { 0,1,1,1 };//用于路上的移动
-  int MoveRoadY[4] = { 1,0,-1,1 };//注意：此函数输入的已经确认是num>=4一条路
+Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY ,int dir,int WillWin,int ComputerSide) {//寻找一条路上有>=4个棋子的空位
   
   Step ReturnEmpty;//此函数要满足活、眠的要求
   ReturnEmpty.first.x = -1;
@@ -154,7 +153,7 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY, int RangeBeg
   else {//敌方形成连四连五的情况
     int num = 0;//用于查看是否有活四活五的情况
     int FirstNotEmptyFlag = 0;
-    Point FirstNotEmpty;
+    Point FirstNotEmpty,LastNotEmpty;
     for (int i = 0; i < 6; i++) {//找第一个空位置，且与敌方子相邻。
       a = BeginX + i * MoveRoadX[dir];
       b = BeginY + i * MoveRoadY[dir];
@@ -169,7 +168,7 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY, int RangeBeg
         break;
       }
     }
-    //暂时改变Board
+
 
     for (int i = 0; i < 6; i++) {//有活四活五的情况，分析起始结点
       a = BeginX + i * MoveRoadX[dir];
@@ -180,14 +179,16 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY, int RangeBeg
         FirstNotEmpty.y = b;
       }
     }
-    int OriginColor = Board[ReturnEmpty.first.x][ReturnEmpty.first.y];
+    int OriginColor = Board[ReturnEmpty.first.x][ReturnEmpty.first.y];//暂时改变board
     Board[ReturnEmpty.first.x][ReturnEmpty.first.y] = ComputerSide;
     
     int flag = 2;
+    int limit = 0;
+    int num1, num2;
     Point Fake;
     Fake.x = -1;
     Fake.y = -1;
-    num = IfNot_Road(Board, FirstNotEmpty.x,  FirstNotEmpty.y,flag, dir,0,Fake);
+    num = IfNot_Road(Board, FirstNotEmpty.x,  FirstNotEmpty.y,flag, dir,limit,Fake);
     if (num >= 4) {
       for (int i = 0; i < 6; i++) {//找第一个空位置，且与敌方子相邻。
         a = FirstNotEmpty.x + i * MoveRoadX[dir];
@@ -204,36 +205,39 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY, int RangeBeg
         }
       }
     }
-    Board[ReturnEmpty.first.x][ReturnEmpty.first.y] = OriginColor;
+    Board[ReturnEmpty.first.x][ReturnEmpty.first.y] = OriginColor;//恢复board
     return ReturnEmpty;
   }
   return ReturnEmpty;
 }
-Step PreSeek(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY,int ComputerSide) {//判断里面的所有路是否有活四，活五，眠五
+Step PreSeek(int Board[19][19],int ComputerSide) {//判断里面的所有路是否有活四，活五，眠五
+  
   Step ReturnStep;
   ReturnStep.first.x = -1;
   ReturnStep.first.y = -1;
   ReturnStep.second.x = -1;
   ReturnStep.second.y = -1;
 
-  int MoveRoadX[4] = { 0,1,1,1 };
-  int MoveRoadY[4] = { 1,0,-1,1 };
-  for (int i = BeginX; i <= EndX; i++) {//以目前搜索范围内所有格子为起点
-    for (int j = BeginY; j <= EndY; j++) {
-      for (int k = 0; k < 4; k++) {//一个起点有四个方向
+
+  for (int i = RangeBeginX; i <= RangeEndX; i++) {//以目前搜索范围内所有格子为起点
+    for (int j = RangeBeginY; j <= RangeEndY; j++) {
+      for (int dir = 0; dir < 4; dir++) {//一个起点有四个方向
         int num = 0;
         int flag = 2;
         Point Fake;
         Fake.x = -1;
         Fake.y = -1;
-        num = IfNot_Road(Board, i, j,flag, k,0,Fake);
+        num = IfNot_Road(Board, i, j,flag, dir,0,Fake);
         if (num == -1||num<4) continue;
+        int WillWin;
         if (ComputerSide==flag) {//己方连四或连五
-          ReturnStep=PreSeek_ReturnEmpty(Board, i, j,  RangeBeginX, RangeBeginY, RangeEndX, RangeEndY ,k, 1,ComputerSide);
+          WillWin=1;
+          ReturnStep=PreSeek_ReturnEmpty(Board, i, j, dir, WillWin,ComputerSide);
           return ReturnStep;
         }
         else {//敌方连四或连五
-          ReturnStep = PreSeek_ReturnEmpty(Board, i, j,  RangeBeginX,  RangeBeginY,  RangeEndX,  RangeEndY,k, 0,ComputerSide);
+          WillWin = 0;
+          ReturnStep = PreSeek_ReturnEmpty(Board, i, j,  dir, 0,ComputerSide);
           return ReturnStep;
         }
       }
@@ -357,7 +361,7 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
 
   Step PreSeekStep;
   int FirstChess_Flag = 0;//1代表一颗棋子已经确定
-  PreSeekStep=PreSeek(Board, BeginX, EndX, BeginY, EndY,ComputerSide);//使用博弈树之前进行前期扫描，判断是否有活四活五等必须落子的情况
+  PreSeekStep=PreSeek(Board, ComputerSide);//使用博弈树之前进行前期扫描，判断是否有活四活五等必须落子的情况
   if (PreSeekStep.first.x != -1) {
     NextTwoStep.first.x = PreSeekStep.first.x;
     NextTwoStep.first.y = PreSeekStep.first.y;

@@ -25,7 +25,7 @@ ComputerSide为我方执子颜色。
 可用来求单颗棋子的分数，只需将limit设为0即可，limitchess随机赋值。
 
 
-IfNot_Road(int Board[19][19], int BeginX, int EndX, int BeginY, int EndY, int &flag, int dir)
+int IfNot_Road(int Board[19][19], int BeginX, int BeginY,int &flag, int dir,int limit,Point LimitChess)
 形参分别代表预计形成路的起点坐标和终点坐标，flag是标志路的颜色，dir是路的方向
 子函数IfNot_Road用于甄别从起始点到终点是否构成一条路
 
