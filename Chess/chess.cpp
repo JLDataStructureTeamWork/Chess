@@ -18,7 +18,8 @@ int RangeEndX = -1;
 int RangeEndY = -1;
 int MoveRoadX[4] = { 0,1,1,1 };
 int MoveRoadY[4] = { 1,0,-1,1 };
-
+int Width;//博弈树宽度
+int Depth;//博弈树深度
 struct Point { //点结构
   int x, y;
 };
@@ -315,7 +316,7 @@ int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int
 }
 
 
-queue<Step> GenerateSon(int Board[19][19],int BeginX,int EndX,int BeginY,int EndY,int w,int ComputerSide) 
+queue<Step> GenerateSon(int Board[19][19],int w,int ComputerSide,int OneOrTwo_Flag) //选择一个结点还是两个结点
 {
 	//产生子节点队列函数
 	// 1.1 对所有的空点进行评估，并按照其估值大小降序排列，结果记录在表L中。
@@ -344,7 +345,7 @@ queue<Step> GenerateSon(int Board[19][19],int BeginX,int EndX,int BeginY,int End
 	 //这里让B等于W；
 	 queue<Step> res;
 
-	 sort();
+	 //sort();
 
 	 for(int i=0;i<w;i++)
 	 	res.push(LC[i][0]);//这里还没有写好排序函数
@@ -436,12 +437,13 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
   }
 
   Step PreSeekStep;
-  int FirstChess_Flag = 0;//1代表一颗棋子已经确定
+  int OneOrTwo_Flag = 0;//1代表一颗棋子已经确定
   PreSeekStep=PreSeek(Board, ComputerSide);//使用博弈树之前进行前期扫描，判断是否有活四活五等必须落子的情况
   if (PreSeekStep.first.x != -1) {
     NextTwoStep.first.x = PreSeekStep.first.x;
     NextTwoStep.first.y = PreSeekStep.first.y;
-    FirstChess_Flag = 1;
+    Board[NextTwoStep.first.x][NextTwoStep.first.y] = ComputerSide;//把第一个棋子写入棋局
+    OneOrTwo_Flag = 1;
   }
   if (PreSeekStep.second.x != -1) {
     NextTwoStep.second.x = PreSeekStep.second.x;
@@ -449,20 +451,16 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
     return NextTwoStep;//两颗棋子均确定则直接返回
   }
   //----------博弈树部分------------//
-	int w=10;
-	vector<Step> list;//生成前w个字节点
-	int bestvalue=0;int beststep=0;
-	for(int i=0;i<10;i++)
-	{
-		if(NegaMax_AlphaBeta()>beststep)
-		{
-			beststep=i;
-			bestvalue=NegaMax_AlphaBeta();
-		}
-	}
-	//找到最优解
-	return list[beststep];
-	
+  int w;
+  int max = -1;
+  int Alpha = INT16_MIN;
+  int Beta = INT16_MAX;
+  queue<Step> ImpossibleFact;
+  ImpossibleFact=GenerateSon(Board, w, ComputerSide, OneOrTwo_Flag);
+  while (!ImpossibleFact.empty()) {
+    Step Current = GetFrontNode(ImpossibleFact);
+    int temp = NegaMax_AlphaBeta(Current, Alpha, Beta, Depth);
+  }
 }
 
 int main()
