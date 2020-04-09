@@ -12,34 +12,39 @@ using namespace std;
 #define WHITE 1
 #define EMPTY 2
 
-int RangeBeginX = 0;//Ä¿Ç°ËÑË÷·¶Î§
+int RangeBeginX = 0;//ç›®å‰æœç´¢èŒƒå›´
 int RangeBeginY = 0; 
 int RangeEndX = 0; 
 int RangeEndY = 0;
 int MoveRoadX[4] = { 0,1,1,1 };
 int MoveRoadY[4] = { 1,0,-1,1 };
 
-struct Point { //µã½á¹¹
+struct Point { //ç‚¹ç»“æ„
   int x, y;
 };
-struct Step { //²½½á¹¹
+struct Step { //æ­¥ç»“æ„
   Point first, second;
   int value;
 };
+struct pointincludevalue
+{
+	int x,y;
+	int value;
+};
 
-int Board[19][19];//´æ´¢ÆåÅÌĞÅÏ¢£¬ÆäÔªËØÖµÎª BLACK, WHITE, EMPTY Ö®Ò»
-//Â·±éÀúµÄ·½Ïò²Î¿¼githubÉÏ"±éÀúË³ĞòÒÔ¼°ÆğÖÕµã·½Ïò.png"
-int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,int EndY,int ComputerSide) {//È«¾ÖÆÀ¼Ûº¯Êı
+int Board[19][19];//å­˜å‚¨æ£‹ç›˜ä¿¡æ¯ï¼Œå…¶å…ƒç´ å€¼ä¸º BLACK, WHITE, EMPTY ä¹‹ä¸€
+//è·¯éå†çš„æ–¹å‘å‚è€ƒgithubä¸Š"éå†é¡ºåºä»¥åŠèµ·ç»ˆç‚¹æ–¹å‘.png"
+int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,int EndY,int ComputerSide) {//å…¨å±€è¯„ä»·å‡½æ•°
   
-  int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//²»Í¬Æå×ÓÊıµÄÂ·µÄÌõÊı
+  int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//ä¸åŒæ£‹å­æ•°çš„è·¯çš„æ¡æ•°
   int NumOfEnemyRoad[7]= { 0,0,0,0,0,0,0 };
-  int ScoreOfRoad[7] = {};//²»Í¬Æå×ÓÊıµÄÂ·µÄ·ÖÊı
+  int ScoreOfRoad[7] = {};//ä¸åŒæ£‹å­æ•°çš„è·¯çš„åˆ†æ•°
   
   for (int dir = 0; dir < 4; dir++) {
-    for (int i = BeginX; i <= EndX; i++) {//¶ÔÃ¿ĞĞµÄÂ·½øĞĞ·ÖÎö
+    for (int i = BeginX; i <= EndX; i++) {//å¯¹æ¯è¡Œçš„è·¯è¿›è¡Œåˆ†æ
       for (int j = BeginY; j <= EndY; j++) {
         int num = 0;
-        int flag = 0;//flagÀ´´ú±íÆå×ÓÑÕÉ«µÄ±ä»¯£¬Ã»ÓĞÓöµ½Æå×ÓÎª0£¬Óöµ½ºÚÆåÎª1£¬Óöµ½°×ÆåÎª2£¬Ç°ºóÓöµ½²»Í¬É«Æå×ÓÔòbreak
+        int flag = 0;//flagæ¥ä»£è¡¨æ£‹å­é¢œè‰²çš„å˜åŒ–ï¼Œæ²¡æœ‰é‡åˆ°æ£‹å­ä¸º0ï¼Œé‡åˆ°é»‘æ£‹ä¸º1ï¼Œé‡åˆ°ç™½æ£‹ä¸º2ï¼Œå‰åé‡åˆ°ä¸åŒè‰²æ£‹å­åˆ™break
         for (int k = 0; k < 6; k++) {
           int a, b;
           if (dir == 0) {
@@ -63,7 +68,7 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
             b = j + k;
           }
           
-          if ((VirtualBoard[a][b] == BLACK && flag == 2) || (VirtualBoard[a][b] == WHITE && flag == 1)) {//Ç°ºóÆå×ÓÑÕÉ«²»Í¬Ôò´ËÂ·×÷·Ï
+          if ((VirtualBoard[a][b] == BLACK && flag == 2) || (VirtualBoard[a][b] == WHITE && flag == 1)) {//å‰åæ£‹å­é¢œè‰²ä¸åŒåˆ™æ­¤è·¯ä½œåºŸ
             flag = -1;
             break;
           }
@@ -98,19 +103,19 @@ int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,i
   }
   return Score;
 }
-int IfNot_Road(int Board[19][19], int BeginX, int BeginY,int &flag, int dir,int limit,Point LimitChess) {//ÅĞ¶ÏÊÇ·ñÊÇÒ»ÌõÂ·
-  int num = 0;//Èç¹ûÊÇÂ·£¬ÆäÖĞµÄÆå×Ó¸öÊı
+int IfNot_Road(int Board[19][19], int BeginX, int BeginY,int &flag, int dir,int limit,Point LimitChess) {//åˆ¤æ–­æ˜¯å¦æ˜¯ä¸€æ¡è·¯
+  int num = 0;//å¦‚æœæ˜¯è·¯ï¼Œå…¶ä¸­çš„æ£‹å­ä¸ªæ•°
 
-  if (BeginX < RangeBeginX || BeginX >RangeEndX || BeginX+5*MoveRoadX[dir] < RangeBeginX || BeginX+5*MoveRoadX[dir] > RangeEndX) return -1;//ÒÔËÑË÷·¶Î§ÄÚËùÓĞ¸ñ×ÓÎªÆğµã£¬À©´óÁËËÑË÷·¶Î§
-  if (BeginY < RangeBeginY || BeginY >RangeEndY || BeginY+5 * MoveRoadX[dir]< RangeBeginY || BeginY + 5 * MoveRoadX[dir] >RangeEndY) return -1;//Ôö¼Ó±¾º¯ÊıĞÎ²ÎRangeBeginX/Y¡¢RangeEndX/Y,Ä¿Ç°µÄEndBeginÊÇÂ·µÄÆğµãÖÕµã
-  //2´ú±í»¹Î´Óöµ½Æå×Ó£¬1°××Ó£¬0ºÚ×Ó¡£
+  if (BeginX < RangeBeginX || BeginX >RangeEndX || BeginX+5*MoveRoadX[dir] < RangeBeginX || BeginX+5*MoveRoadX[dir] > RangeEndX) return -1;//ä»¥æœç´¢èŒƒå›´å†…æ‰€æœ‰æ ¼å­ä¸ºèµ·ç‚¹ï¼Œæ‰©å¤§äº†æœç´¢èŒƒå›´
+  if (BeginY < RangeBeginY || BeginY >RangeEndY || BeginY+5 * MoveRoadX[dir]< RangeBeginY || BeginY + 5 * MoveRoadX[dir] >RangeEndY) return -1;//å¢åŠ æœ¬å‡½æ•°å½¢å‚RangeBeginX/Yã€RangeEndX/Y,ç›®å‰çš„EndBeginæ˜¯è·¯çš„èµ·ç‚¹ç»ˆç‚¹
+  //2ä»£è¡¨è¿˜æœªé‡åˆ°æ£‹å­ï¼Œ1ç™½å­ï¼Œ0é»‘å­ã€‚
   int a = BeginX, b = BeginY;
   for (int i = 0; i < 6; i++) {
-    a = BeginX + i * MoveRoadX[dir];//²»Í¬µÄ·½Ïò
+    a = BeginX + i * MoveRoadX[dir];//ä¸åŒçš„æ–¹å‘
     b = BeginY + i * MoveRoadY[dir];
-    if (limit==1&&LimitChess.x == a && LimitChess.y == b) return -1;//±ÜÃâÆÀ¼Ûº¯ÊıÖĞÖØ¸´ÆÀ¼ÛÂ·Ê¹ÓÃ
+    if (limit==1&&LimitChess.x == a && LimitChess.y == b) return -1;//é¿å…è¯„ä»·å‡½æ•°ä¸­é‡å¤è¯„ä»·è·¯ä½¿ç”¨
     if (Board[a][b] == EMPTY) continue;
-    if (Board[a][b] == BLACK && flag == 1) return -1;//·µ»Ø-1´ú±í²»ÊÇÂ·
+    if (Board[a][b] == BLACK && flag == 1) return -1;//è¿”å›-1ä»£è¡¨ä¸æ˜¯è·¯
     if (Board[a][b] == WHITE && flag == 0) return -1;
     if (Board[a][b] == BLACK) {
       num++;
@@ -121,18 +126,18 @@ int IfNot_Road(int Board[19][19], int BeginX, int BeginY,int &flag, int dir,int 
       flag = 1;
     }
   }
-  return num;//·µ»ØÆå×Ó¸öÊı
+  return num;//è¿”å›æ£‹å­ä¸ªæ•°
 }
-Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY ,int dir,int WillWin,int ComputerSide) {//Ñ°ÕÒÒ»ÌõÂ·ÉÏÓĞ>=4¸öÆå×ÓµÄ¿ÕÎ»
+Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY ,int dir,int WillWin,int ComputerSide) {//å¯»æ‰¾ä¸€æ¡è·¯ä¸Šæœ‰>=4ä¸ªæ£‹å­çš„ç©ºä½
   
-  Step ReturnEmpty;//´Ëº¯ÊıÒªÂú×ã»î¡¢ÃßµÄÒªÇó
+  Step ReturnEmpty;//æ­¤å‡½æ•°è¦æ»¡è¶³æ´»ã€çœ çš„è¦æ±‚
   ReturnEmpty.first.x = -1;
   ReturnEmpty.first.y = -1;
   ReturnEmpty.second.x = -1;
   ReturnEmpty.second.y = -1;
   
   int a = BeginX, b = BeginY;
-  if (WillWin) {//¼º·½ÒÑ¾­ĞÎ³ÉÁ¬ËÄÁ¬ÎåµÄÂ·,Ö±½Ó·µ»Ø¿ÕµÄÎ»ÖÃÏÂ×Ó£¬¿ÉÖ±½Ó»ñÊ¤
+  if (WillWin) {//å·±æ–¹å·²ç»å½¢æˆè¿å››è¿äº”çš„è·¯,ç›´æ¥è¿”å›ç©ºçš„ä½ç½®ä¸‹å­ï¼Œå¯ç›´æ¥è·èƒœ
     for (int i = 0; i < 6; i++) {
       a = BeginX + i * MoveRoadX[dir];
       b = BeginY + i * MoveRoadY[dir];
@@ -150,14 +155,14 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY ,int dir,int 
     }
     return ReturnEmpty;
   }
-  else {//µĞ·½ĞÎ³ÉÁ¬ËÄÁ¬ÎåµÄÇé¿ö
-    int num = 0;//ÓÃÓÚ²é¿´ÊÇ·ñÓĞ»îËÄ»îÎåµÄÇé¿ö
+  else {//æ•Œæ–¹å½¢æˆè¿å››è¿äº”çš„æƒ…å†µ
+    int num = 0;//ç”¨äºæŸ¥çœ‹æ˜¯å¦æœ‰æ´»å››æ´»äº”çš„æƒ…å†µ
     int FirstNotEmptyFlag = 0;
     Point FirstNotEmpty,LastNotEmpty;
-    for (int i = 0; i < 6; i++) {//ÕÒµÚÒ»¸ö¿ÕÎ»ÖÃ£¬ÇÒÓëµĞ·½×ÓÏàÁÚ¡£
+    for (int i = 0; i < 6; i++) {//æ‰¾ç¬¬ä¸€ä¸ªç©ºä½ç½®ï¼Œä¸”ä¸æ•Œæ–¹å­ç›¸é‚»ã€‚
       a = BeginX + i * MoveRoadX[dir];
       b = BeginY + i * MoveRoadY[dir];
-      if (i != 5 && Board[a][b] == EMPTY && Board[a + MoveRoadX[dir]][b + MoveRoadY[dir]] != EMPTY) {//Ê¹Ä¿±êÎ»ÖÃ½ôÌùµ±Ç°Æå×Ó
+      if (i != 5 && Board[a][b] == EMPTY && Board[a + MoveRoadX[dir]][b + MoveRoadY[dir]] != EMPTY) {//ä½¿ç›®æ ‡ä½ç½®ç´§è´´å½“å‰æ£‹å­
         ReturnEmpty.first.x = a;
         ReturnEmpty.first.y = b;
         break;
@@ -170,16 +175,16 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY ,int dir,int 
     }
 
 
-    for (int i = 0; i < 6; i++) {//ÓĞ»îËÄ»îÎåµÄÇé¿ö£¬·ÖÎöÆğÊ¼½áµã
+    for (int i = 0; i < 6; i++) {//æœ‰æ´»å››æ´»äº”çš„æƒ…å†µï¼Œåˆ†æèµ·å§‹ç»“ç‚¹
       a = BeginX + i * MoveRoadX[dir];
       b = BeginY + i * MoveRoadY[dir];
-      if (Board[a][b] != EMPTY && FirstNotEmptyFlag == 0) {//±ê¼ÇµÚÒ»¸öÂ·ÉÏ·Ç¿ÕµÄÎ»ÖÃ£¬ÓÃÓÚ¼ì²â»îËÄµÈ±ØĞëÂäÁ½¸ö×ÓµÄÇé¿ö
+      if (Board[a][b] != EMPTY && FirstNotEmptyFlag == 0) {//æ ‡è®°ç¬¬ä¸€ä¸ªè·¯ä¸Šéç©ºçš„ä½ç½®ï¼Œç”¨äºæ£€æµ‹æ´»å››ç­‰å¿…é¡»è½ä¸¤ä¸ªå­çš„æƒ…å†µ
         FirstNotEmptyFlag = 1;
         FirstNotEmpty.x = a;
         FirstNotEmpty.y = b;
       }
     }
-    int OriginColor = Board[ReturnEmpty.first.x][ReturnEmpty.first.y];//ÔİÊ±¸Ä±äboard
+    int OriginColor = Board[ReturnEmpty.first.x][ReturnEmpty.first.y];//æš‚æ—¶æ”¹å˜board
     Board[ReturnEmpty.first.x][ReturnEmpty.first.y] = ComputerSide;
     
     int flag = 2;
@@ -190,10 +195,10 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY ,int dir,int 
     Fake.y = -1;
     num = IfNot_Road(Board, FirstNotEmpty.x,  FirstNotEmpty.y,flag, dir,limit,Fake);
     if (num >= 4) {
-      for (int i = 0; i < 6; i++) {//ÕÒµÚÒ»¸ö¿ÕÎ»ÖÃ£¬ÇÒÓëµĞ·½×ÓÏàÁÚ¡£
+      for (int i = 0; i < 6; i++) {//æ‰¾ç¬¬ä¸€ä¸ªç©ºä½ç½®ï¼Œä¸”ä¸æ•Œæ–¹å­ç›¸é‚»ã€‚
         a = FirstNotEmpty.x + i * MoveRoadX[dir];
         b = FirstNotEmpty.y + i * MoveRoadY[dir];
-        if (i != 5 && Board[a][b] == EMPTY && Board[a + MoveRoadX[dir]][b + MoveRoadY[dir]] != EMPTY) {//Ê¹Ä¿±êÎ»ÖÃ½ôÌùµ±Ç°Æå×Ó
+        if (i != 5 && Board[a][b] == EMPTY && Board[a + MoveRoadX[dir]][b + MoveRoadY[dir]] != EMPTY) {//ä½¿ç›®æ ‡ä½ç½®ç´§è´´å½“å‰æ£‹å­
           ReturnEmpty.second.x = a;
           ReturnEmpty.second.y = b;
           break;
@@ -205,12 +210,12 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int BeginX, int BeginY ,int dir,int 
         }
       }
     }
-    Board[ReturnEmpty.first.x][ReturnEmpty.first.y] = OriginColor;//»Ö¸´board
+    Board[ReturnEmpty.first.x][ReturnEmpty.first.y] = OriginColor;//æ¢å¤board
     return ReturnEmpty;
   }
   return ReturnEmpty;
 }
-Step PreSeek(int Board[19][19],int ComputerSide) {//ÅĞ¶ÏÀïÃæµÄËùÓĞÂ·ÊÇ·ñÓĞ»îËÄ£¬»îÎå£¬ÃßÎå
+Step PreSeek(int Board[19][19],int ComputerSide) {//åˆ¤æ–­é‡Œé¢çš„æ‰€æœ‰è·¯æ˜¯å¦æœ‰æ´»å››ï¼Œæ´»äº”ï¼Œçœ äº”
   
   Step ReturnStep;
   ReturnStep.first.x = -1;
@@ -219,9 +224,9 @@ Step PreSeek(int Board[19][19],int ComputerSide) {//ÅĞ¶ÏÀïÃæµÄËùÓĞÂ·ÊÇ·ñÓĞ»îËÄ£¬
   ReturnStep.second.y = -1;
 
 
-  for (int i = RangeBeginX; i <= RangeEndX; i++) {//ÒÔÄ¿Ç°ËÑË÷·¶Î§ÄÚËùÓĞ¸ñ×ÓÎªÆğµã
+  for (int i = RangeBeginX; i <= RangeEndX; i++) {//ä»¥ç›®å‰æœç´¢èŒƒå›´å†…æ‰€æœ‰æ ¼å­ä¸ºèµ·ç‚¹
     for (int j = RangeBeginY; j <= RangeEndY; j++) {
-      for (int dir = 0; dir < 4; dir++) {//Ò»¸öÆğµãÓĞËÄ¸ö·½Ïò
+      for (int dir = 0; dir < 4; dir++) {//ä¸€ä¸ªèµ·ç‚¹æœ‰å››ä¸ªæ–¹å‘
         int num = 0;
         int flag = 2;
         Point Fake;
@@ -230,12 +235,12 @@ Step PreSeek(int Board[19][19],int ComputerSide) {//ÅĞ¶ÏÀïÃæµÄËùÓĞÂ·ÊÇ·ñÓĞ»îËÄ£¬
         num = IfNot_Road(Board, i, j,flag, dir,0,Fake);
         if (num == -1||num<4) continue;
         int WillWin;
-        if (ComputerSide==flag) {//¼º·½Á¬ËÄ»òÁ¬Îå
+        if (ComputerSide==flag) {//å·±æ–¹è¿å››æˆ–è¿äº”
           WillWin=1;
           ReturnStep=PreSeek_ReturnEmpty(Board, i, j, dir, WillWin,ComputerSide);
           return ReturnStep;
         }
-        else {//µĞ·½Á¬ËÄ»òÁ¬Îå
+        else {//æ•Œæ–¹è¿å››æˆ–è¿äº”
           WillWin = 0;
           ReturnStep = PreSeek_ReturnEmpty(Board, i, j,  dir, 0,ComputerSide);
           return ReturnStep;
@@ -246,7 +251,7 @@ Step PreSeek(int Board[19][19],int ComputerSide) {//ÅĞ¶ÏÀïÃæµÄËùÓĞÂ·ÊÇ·ñÓĞ»îËÄ£¬
   return ReturnStep;
 }
 
-void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {//20,-1,20,-1//ÒÑ²âÊÔ
+void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {//20,-1,20,-1//å·²æµ‹è¯•
   for (int i = 0; i < 19; i++) {
     for (int j = 0; j < 19; j++) {
       if (Board[i][j] != EMPTY) {
@@ -261,16 +266,16 @@ void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {
 }
 
 int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChess,int ComputerSide,int limit) {
-  int sum = 0;                                            //Èç¹ûFirstchess²»Îª¿Õ£¬boardÖĞÓĞFirstChessµÄ±ê¼Ç
-  int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//²»Í¬Æå×ÓÊıµÄÂ·µÄÌõÊı
+  int sum = 0;                                            //å¦‚æœFirstchessä¸ä¸ºç©ºï¼Œboardä¸­æœ‰FirstChessçš„æ ‡è®°
+  int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//ä¸åŒæ£‹å­æ•°çš„è·¯çš„æ¡æ•°
   int NumOfEnemyRoad[7] = { 0,0,0,0,0,0,0 };
-  int ScoreOfRoad[7] = {};//²»Í¬Æå×ÓÊıµÄÂ·µÄ·ÖÊı!!!
+  int ScoreOfRoad[7] = {};//ä¸åŒæ£‹å­æ•°çš„è·¯çš„åˆ†æ•°!!!
   int MoveRoadX[4] = { 0,1,1,1 };
   int MoveRoadY[4] = { 1,0,-1,1 };
   for (int dir = 0; dir < 4; dir++) {
-    for (int i = 0; i < 6; i++) {//ĞĞÉÏµÄÂ·
+    for (int i = 0; i < 6; i++) {//è¡Œä¸Šçš„è·¯
       Point Begin;
-      Begin.y = FirstChess.y - i * MoveRoadY[dir];//¶¨Æğµã£¬ÓëÕı³£Â·±éÀúµÄ·½ÏòÏà·´
+      Begin.y = FirstChess.y - i * MoveRoadY[dir];//å®šèµ·ç‚¹ï¼Œä¸æ­£å¸¸è·¯éå†çš„æ–¹å‘ç›¸å
       Begin.x = FirstChess.x - i * MoveRoadX[dir];
       int flag = 2;
       int num = IfNot_Road(Board, Begin.x, Begin.y, flag, dir,limit,LimitChess);
@@ -293,35 +298,35 @@ int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChe
 }
 int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int ComputerSide) {//
   int Score1, Score2;
-  Score1 = Board[FirstChess.x][FirstChess.y];//ÎªÁË¸Ä±äÔ­Êı×é
+  Score1 = Board[FirstChess.x][FirstChess.y];//ä¸ºäº†æ”¹å˜åŸæ•°ç»„
   Score2 = Board[SecondChess.x][SecondChess.y];
   
   int Before=PartScore_EvalueFucation(Board, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(Board, SecondChess, FirstChess, ComputerSide, 1);
   
-  Board[FirstChess.x][FirstChess.y] = ComputerSide;//¸Ä±äÔ­Êı×é
+  Board[FirstChess.x][FirstChess.y] = ComputerSide;//æ”¹å˜åŸæ•°ç»„
   Board[SecondChess.x][SecondChess.y] = ComputerSide;
   
   int After= PartScore_EvalueFucation(Board, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(Board, SecondChess, FirstChess, ComputerSide, 1);
   
-  Board[FirstChess.x][FirstChess.y] = Score1;//»Ö¸´Ô­Êı×é
+  Board[FirstChess.x][FirstChess.y] = Score1;//æ¢å¤åŸæ•°ç»„
   Board[SecondChess.x][SecondChess.y] = Score2;
   
-  return After - Before;//·µ»Ø¾Ö²¿ÆÀ·Ö
+  return After - Before;//è¿”å›å±€éƒ¨è¯„åˆ†
 }
 
 
-queue<Step> GenerateSon(int Board[19][19],int BeginX,int EndX,int BeginY,int EndY) {//²úÉú×Ó½Úµã¶ÓÁĞº¯Êı
+queue<Step> GenerateSon(int Board[19][19],int BeginX,int EndX,int BeginY,int EndY) {//äº§ç”Ÿå­èŠ‚ç‚¹é˜Ÿåˆ—å‡½æ•°
   
 }
 
-Step GetFrontNode(queue<Step> Son) {//µÃµ½¶ÓÁĞÍ·½Úµã²¢popµô
+Step GetFrontNode(queue<Step> Son) {//å¾—åˆ°é˜Ÿåˆ—å¤´èŠ‚ç‚¹å¹¶popæ‰
   Step ReturnNode;
   ReturnNode = Son.front();
   Son.pop();
   return ReturnNode;
 }
 
-int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth) {//¸º¼«´óÖµËÑË÷
+int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth) {//è´Ÿæå¤§å€¼æœç´¢
   int value,BestValue = -INFINITY;
   Step CurrentNode;
   if (depth <= 0) {
@@ -331,7 +336,7 @@ int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth) {//¸º¼«´óÖµËÑË÷
   //Son=GenerateSon();
   while (!Son.empty()) {
     CurrentNode = GetFrontNode(Son);
-    value = -NegaMax_AlphaBeta(CurrentNode, -Beta,-Alpha,depth - 1);//ÂÛÎÄÖĞµÄ·½·¨£¬¼ò½àÁË´úÂë£¬µ«Ã»¿´¶®(
+    value = -NegaMax_AlphaBeta(CurrentNode, -Beta,-Alpha,depth - 1);//è®ºæ–‡ä¸­çš„æ–¹æ³•ï¼Œç®€æ´äº†ä»£ç ï¼Œä½†æ²¡çœ‹æ‡‚(
     if (value >= Alpha) {
       Alpha = value;
     }
@@ -341,8 +346,25 @@ int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth) {//¸º¼«´óÖµËÑË÷
   }
   return Alpha;
 }
+void firstsection()
+{
+	 queue<pointincludevalue> LL;
+ for(int i=0;i<19;i++)
+ {
+	 for(int j=0;j<19;j++)
+	 {
+		 if(Board[i][j]==EMPTY)
+		 {
+			 pointincludevalue temp;temp.x=i;temp.y=j;
+			 temp.value=evaluation(i,j,Board);
+			 LL.push(temp);
+		 }
+	 }
+ }
+ sort(0,LL.size(),cmp);
+}
 Step machine(int TureBoard[19][19],int ComputerSide) {
-  int Board[19][19];//ÎªÁË²»¸Ä±äÖ÷º¯ÊıÖĞµÄ½çÃæ
+  int Board[19][19];//ä¸ºäº†ä¸æ”¹å˜ä¸»å‡½æ•°ä¸­çš„ç•Œé¢
   for (int i = 0; i < 19; i++) {
     for (int j = 0; j < 19; j++) {
       Board[i][j] = TureBoard[i][j];
@@ -351,8 +373,8 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
   Step NextTwoStep;
   int BeginX = 20, BeginY = 20;
   int EndX = -1, EndY = -1;
-  BoardRange(Board, BeginX, EndX, BeginY, EndY);//Ê×ÏÈÌ½Ã÷½çÃæ·¶Î§
-  for (int i = 1; i <= 2; i++) {//½«·¶Î§À©´óÁ½¸öµ¥Î»£¬µÃµ½ĞèÒª·ÖÎöÂä×ÓµÄÇøÓò
+  BoardRange(Board, BeginX, EndX, BeginY, EndY);//é¦–å…ˆæ¢æ˜ç•Œé¢èŒƒå›´
+  for (int i = 1; i <= 2; i++) {//å°†èŒƒå›´æ‰©å¤§ä¸¤ä¸ªå•ä½ï¼Œå¾—åˆ°éœ€è¦åˆ†æè½å­çš„åŒºåŸŸ
     if (BeginX != 0) BeginX--;
     if (BeginY != 0) BeginY--;
     if (EndX != 18) EndX++;
@@ -360,8 +382,8 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
   }
 
   Step PreSeekStep;
-  int FirstChess_Flag = 0;//1´ú±íÒ»¿ÅÆå×ÓÒÑ¾­È·¶¨
-  PreSeekStep=PreSeek(Board, ComputerSide);//Ê¹ÓÃ²©ŞÄÊ÷Ö®Ç°½øĞĞÇ°ÆÚÉ¨Ãè£¬ÅĞ¶ÏÊÇ·ñÓĞ»îËÄ»îÎåµÈ±ØĞëÂä×ÓµÄÇé¿ö
+  int FirstChess_Flag = 0;//1ä»£è¡¨ä¸€é¢—æ£‹å­å·²ç»ç¡®å®š
+  PreSeekStep=PreSeek(Board, ComputerSide);//ä½¿ç”¨åšå¼ˆæ ‘ä¹‹å‰è¿›è¡Œå‰æœŸæ‰«æï¼Œåˆ¤æ–­æ˜¯å¦æœ‰æ´»å››æ´»äº”ç­‰å¿…é¡»è½å­çš„æƒ…å†µ
   if (PreSeekStep.first.x != -1) {
     NextTwoStep.first.x = PreSeekStep.first.x;
     NextTwoStep.first.y = PreSeekStep.first.y;
@@ -370,78 +392,95 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
   if (PreSeekStep.second.x != -1) {
     NextTwoStep.second.x = PreSeekStep.second.x;
     NextTwoStep.second.y = PreSeekStep.second.y;
-    return NextTwoStep;//Á½¿ÅÆå×Ó¾ùÈ·¶¨ÔòÖ±½Ó·µ»Ø
+    return NextTwoStep;//ä¸¤é¢—æ£‹å­å‡ç¡®å®šåˆ™ç›´æ¥è¿”å›
   }
-  //----------²©ŞÄÊ÷²¿·Ö------------//
-  //¶Ô½çÃæ½øĞĞ·ÖÎö
-
+  //----------åšå¼ˆæ ‘éƒ¨åˆ†------------//
+  //å¯¹ç•Œé¢è¿›è¡Œåˆ†æ
+ // 1.1 å¯¹æ‰€æœ‰çš„ç©ºç‚¹è¿›è¡Œè¯„ä¼°ï¼Œå¹¶æŒ‰ç…§å…¶ä¼°å€¼å¤§å°é™åºæ’åˆ—ï¼Œç»“æœè®°å½•åœ¨è¡¨Lä¸­ã€‚
+	void firstsection();
+ //1.2 ä»Lä¸­ å–å‡ºä¼°å€¼æœ€é«˜çš„Wä¸ªç‚¹ï¼Œ å³ï¼ˆs1ï¼Œs2,s3,s4,s5..)
+ vector<pointincludevalue> S;
+ vector<vector<pointincludevalue>> Li;
+ vector<vector<Step>> LC;
+ for(int i=0;i<w;i++)
+ {
+	 //3.1 åœ¨si å¤„æ”¾ç½®ä¸€ä¸ªæ£‹å­ï¼Œ ç„¶åæ‰§è¡Œç±»ä¼¼1çš„æ“ä½œï¼Œé‡æ–°å¯¹å‰©ä¸‹çš„ç©ºç‚¹è¿›è¡Œä¼°å€¼å’Œæ’åºï¼Œç»“æœè®°å½•åˆ°Liä¸­
+	Board[S[i].x][S[i].y]=ComputerSide;//è¿™æ˜¯ä¸€ä¸ªè™šæ‹Ÿçš„æ‰§è¡Œæ“ä½œ
+	firstsection();
+	//3.2 åœ¨Liä¸­å–å‡ºä¼°å€¼æœ€é«˜çš„wiä¸ªç‚¹ï¼Œ å³ï¼ˆsiï¼Œã€‚ã€‚ã€‚ã€‚ï¼‰
+	for(int i=0;i<w;i++)
+	{
+		//æ”¾å…¥LCä¸­
+	}
+ }
+ //4 æŒ‰ç…§LCçš„èµ°æ³•ç”Ÿæˆæ–°çš„æ£‹å±€ å¹¶å¯¹æ–°çš„æ£‹å±€ä¼°å€¼ å°†èµ°æ³• å¯¹æŒ‰ç…§ æ–°çš„ä¼°å€¼æ’åº ï¼Œä»ä¸­é€‰æ‹©æœ€å¥½çš„Bä¸ªèµ°æ³•å¯¹ã€‚
 
 }
 
 int main()
 {
-  Step step;//ÁÙÊ±²½½á¹¹
-  char message[256];//Í¨ĞÅÏûÏ¢»º³å
-  int computerSide;//¼º·½Ö´ÆåÑÕÉ«
-  int start = 0;//¶Ô¾Ö¿ªÊ¼±ê¼Ç
+  Step step;//ä¸´æ—¶æ­¥ç»“æ„
+  char message[256];//é€šä¿¡æ¶ˆæ¯ç¼“å†²
+  int computerSide;//å·±æ–¹æ‰§æ£‹é¢œè‰²
+  int start = 0;//å¯¹å±€å¼€å§‹æ ‡è®°
   srand(int(time(0)));
-  //´Ë´¦·ÅÖÃ³õÊ¼»¯´úÂë
+  //æ­¤å¤„æ”¾ç½®åˆå§‹åŒ–ä»£ç 
     //...
 
-  while (1)	//³ÌĞòÖ÷Ñ­»·
+  while (1)	//ç¨‹åºä¸»å¾ªç¯
   {
-    fflush(stdout);//²»ÒªÉ¾³ı´ËÓï¾ä£¬·ñÔò³ÌĞò»á³öÎÊÌâ
-    scanf("%s", message);//»ñÈ¡Æ½Ì¨ÃüÁîÏûÏ¢
-        //·ÖÎöÃüÁî
-    if (strcmp(message, "name?") == 0)//Ïò¶ÔÕ½Æ½Ì¨·¢ËÍ¶ÓÃû
+    fflush(stdout);//ä¸è¦åˆ é™¤æ­¤è¯­å¥ï¼Œå¦åˆ™ç¨‹åºä¼šå‡ºé—®é¢˜
+    scanf("%s", message);//è·å–å¹³å°å‘½ä»¤æ¶ˆæ¯
+        //åˆ†æå‘½ä»¤
+    if (strcmp(message, "name?") == 0)//å‘å¯¹æˆ˜å¹³å°å‘é€é˜Ÿå
     {
       fflush(stdin);
-      /***********½«"Áîºü³å"¸ÄÎªÄãµÄ¶ÓÃû£¬²»³¬¹ı6¸öºº×Ö»ò12¸öÓ¢ÎÄ×ÖÄ¸£¬·ñÔòÎŞ³É¼¨************/
-      /*******/		printf("name ¿ìÀÖµÚÒ»Î»\n");		/**Ö»ĞŞ¸ÄÁîºü³å£¬²»ÒªÉ¾³ıname¿Õ¸ñ****/
-      /***********½«"Áîºü³å"¸ÄÎªÄãµÄ¶ÓÃû£¬²»³¬¹ı6¸öºº×Ö»ò12¸öÓ¢ÎÄ×ÖÄ¸£¬·ñÔòÎŞ³É¼¨************/
+      /***********å°†"ä»¤ç‹å†²"æ”¹ä¸ºä½ çš„é˜Ÿåï¼Œä¸è¶…è¿‡6ä¸ªæ±‰å­—æˆ–12ä¸ªè‹±æ–‡å­—æ¯ï¼Œå¦åˆ™æ— æˆç»©************/
+      /*******/		printf("name å¿«ä¹ç¬¬ä¸€ä½\n");		/**åªä¿®æ”¹ä»¤ç‹å†²ï¼Œä¸è¦åˆ é™¤nameç©ºæ ¼****/
+      /***********å°†"ä»¤ç‹å†²"æ”¹ä¸ºä½ çš„é˜Ÿåï¼Œä¸è¶…è¿‡6ä¸ªæ±‰å­—æˆ–12ä¸ªè‹±æ–‡å­—æ¯ï¼Œå¦åˆ™æ— æˆç»©************/
     }
-    else if (strcmp(message, "new") == 0)//½¨Á¢ĞÂÆå¾Ö
+    else if (strcmp(message, "new") == 0)//å»ºç«‹æ–°æ£‹å±€
     {
       int i, j;
-      scanf("%s", message);//»ñÈ¡¼º·½Ö´ÆåÑÕÉ«
+      scanf("%s", message);//è·å–å·±æ–¹æ‰§æ£‹é¢œè‰²
       fflush(stdin);
-      if (strcmp(message, "black") == 0)	computerSide = BLACK;  //Ö´ºÚ
-      else  computerSide = WHITE;   //Ö´°×
+      if (strcmp(message, "black") == 0)	computerSide = BLACK;  //æ‰§é»‘
+      else  computerSide = WHITE;   //æ‰§ç™½
 
-      for (i = 0; i < 19; ++i)   //³õÊ¼»¯Æå¾Ö
+      for (i = 0; i < 19; ++i)   //åˆå§‹åŒ–æ£‹å±€
         for (j = 0; j < 19; ++j)
           Board[i][j] = EMPTY;
       start = 1;
 
       if (computerSide == BLACK)
       {
-        /**********Éú³ÉµÚÒ»ÊÖ×Å·¨£¬²¢±£´æÔÚstep½á¹¹ÖĞ£¬Âä×Ó×ø±êÎª(step.first.x,step.first.y)**********/
-        /****************************ÔÚÏÂ·½Ìî³ä´úÂë£¬²¢Ìæ»»ÎÒµÄÊ¾Àı´úÂë******************************/
+        /**********ç”Ÿæˆç¬¬ä¸€æ‰‹ç€æ³•ï¼Œå¹¶ä¿å­˜åœ¨stepç»“æ„ä¸­ï¼Œè½å­åæ ‡ä¸º(step.first.x,step.first.y)**********/
+        /****************************åœ¨ä¸‹æ–¹å¡«å……ä»£ç ï¼Œå¹¶æ›¿æ¢æˆ‘çš„ç¤ºä¾‹ä»£ç ******************************/
 
 
         step.first.x = 9;
         step.first.y = 9;
 
 
-        /******************************ÔÚÉÏÃæÌî³äµÚÒ»²½ĞĞÆå´úÂë*******************************************/
+        /******************************åœ¨ä¸Šé¢å¡«å……ç¬¬ä¸€æ­¥è¡Œæ£‹ä»£ç *******************************************/
 
-        Board[step.first.x][step.first.y] = computerSide;//´¦Àí¼º·½ĞĞÆå
-        printf("move %c%c@@\n", step.first.x + 'A', step.first.y + 'A');//Êä³ö×Å·¨
+        Board[step.first.x][step.first.y] = computerSide;//å¤„ç†å·±æ–¹è¡Œæ£‹
+        printf("move %c%c@@\n", step.first.x + 'A', step.first.y + 'A');//è¾“å‡ºç€æ³•
       }
     }
-    else if (strcmp(message, "move") == 0)//ĞĞÆå,±¾³ÌĞòºËĞÄ
+    else if (strcmp(message, "move") == 0)//è¡Œæ£‹,æœ¬ç¨‹åºæ ¸å¿ƒ
     {
-      scanf("%s", message);//»ñÈ¡¶ÔÊÖĞĞÆå×Å·¨
+      scanf("%s", message);//è·å–å¯¹æ‰‹è¡Œæ£‹ç€æ³•
       fflush(stdin);
       step.first.x = message[0] - 'A';		step.first.y = message[1] - 'A';
       step.second.x = message[2] - 'A';		step.second.y = message[3] - 'A';
-      //´¦Àí¶ÔÊÖĞĞÆå
+      //å¤„ç†å¯¹æ‰‹è¡Œæ£‹
       Board[step.first.x][step.first.y] = 1 - computerSide;
       if (!(step.second.x == -1 && step.second.y == -1)) Board[step.second.x][step.second.y] = 1 - computerSide;
 
     /**********************************************************************************************************/
-    /***Éú³ÉÂä×ÓµÄ×ø±ê£¬±£´æÔÚstep½á¹¹ÖĞ£¬µÚ1×ÓÏÂÔÚ(step.first.x,step.first.y)£¬µÚ2×ÓÏÂÔÚ(step.first.x,step.first.y)*****/
-    /**************************************ÔÚÏÂ·½Ìî³ä´úÂë£¬²¢Ìæ»»ÎÒµÄÊ¾Àı´úÂë*****************************************/
+    /***ç”Ÿæˆè½å­çš„åæ ‡ï¼Œä¿å­˜åœ¨stepç»“æ„ä¸­ï¼Œç¬¬1å­ä¸‹åœ¨(step.first.x,step.first.y)ï¼Œç¬¬2å­ä¸‹åœ¨(step.first.x,step.first.y)*****/
+    /**************************************åœ¨ä¸‹æ–¹å¡«å……ä»£ç ï¼Œå¹¶æ›¿æ¢æˆ‘çš„ç¤ºä¾‹ä»£ç *****************************************/
       
       
       
@@ -449,21 +488,21 @@ int main()
 
       
       
-    /*****************************************ÔÚÉÏÃæÌî³ä´úÂë******************************************************/
+    /*****************************************åœ¨ä¸Šé¢å¡«å……ä»£ç ******************************************************/
     /**********************************************************************************************************/
 
-      printf("move %c%c%c%c\n", step.first.x + 'A', step.first.y + 'A', step.second.x + 'A', step.second.y + 'A');//Êä³ö×Å·¨
+      printf("move %c%c%c%c\n", step.first.x + 'A', step.first.y + 'A', step.second.x + 'A', step.second.y + 'A');//è¾“å‡ºç€æ³•
     }
-    else if (strcmp(message, "error") == 0)//×Å·¨´íÎó
+    else if (strcmp(message, "error") == 0)//ç€æ³•é”™è¯¯
     {
       fflush(stdin);
     }
-    else if (strcmp(message, "end") == 0)//¶Ô¾Ö½áÊø
+    else if (strcmp(message, "end") == 0)//å¯¹å±€ç»“æŸ
     {
       fflush(stdin);
       start = 0;
     }
-    else if (strcmp(message, "quit") == 0)//ÍË³öÒıÇæ
+    else if (strcmp(message, "quit") == 0)//é€€å‡ºå¼•æ“
     {
       fflush(stdin);
       printf("Quit!\n");
