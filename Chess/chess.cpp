@@ -426,14 +426,13 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
     }
   }
   Step NextTwoStep;
-  int BeginX = 20, BeginY = 20;
-  int EndX = -1, EndY = -1;
-  BoardRange(Board, BeginX, EndX, BeginY, EndY);//首先探明界面范围
+
+  BoardRange(Board);//首先探明界面范围
   for (int i = 1; i <= 2; i++) {//将范围扩大两个单位，得到需要分析落子的区域
-    if (BeginX != 0) BeginX--;
-    if (BeginY != 0) BeginY--;
-    if (EndX != 18) EndX++;
-    if (EndY != 18) EndY++;
+    if (RangeBeginX != 0) RangeBeginX--;
+    if (RangeBeginY != 0) RangeBeginY--;
+    if (RangeEndX != 18) RangeEndX++;
+    if (RangeEndY != 18) RangeEndY++;
   }
 
   Step PreSeekStep;
