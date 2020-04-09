@@ -12,10 +12,10 @@ using namespace std;
 #define WHITE 1
 #define EMPTY 2
 
-int RangeBeginX = 0;//目前搜索范围
-int RangeBeginY = 0; 
-int RangeEndX = 0; 
-int RangeEndY = 0;
+int RangeBeginX = 20;//目前搜索范围
+int RangeBeginY = 20; 
+int RangeEndX = -1; 
+int RangeEndY = -1;
 int MoveRoadX[4] = { 0,1,1,1 };
 int MoveRoadY[4] = { 1,0,-1,1 };
 
@@ -251,14 +251,14 @@ Step PreSeek(int Board[19][19],int ComputerSide) {//判断里面的所有路是�
   return ReturnStep;
 }
 
-void BoardRange(int Board[19][19],int &BeginX,int &EndX,int &BeginY,int &EndY) {//20,-1,20,-1//已测试
+void BoardRange(int Board[19][19]) {//20,-1,20,-1//已测试
   for (int i = 0; i < 19; i++) {
     for (int j = 0; j < 19; j++) {
       if (Board[i][j] != EMPTY) {
-        if (i < BeginX) BeginX = i;
-        if (i > EndX)EndX = i;
-        if (j < BeginY)BeginY = j;
-        if (j > EndY)EndY = j;
+        if (i < RangeBeginX) RangeBeginX = i;
+        if (i > RangeEndX)RangeEndX = i;
+        if (j < RangeBeginY)RangeBeginY = j;
+        if (j > RangeEndY)RangeEndY = j;
       }
     }
   }
