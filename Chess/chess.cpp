@@ -414,7 +414,7 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
 	}
  }
  //4 按照LC的走法生成新的棋局 并对新的棋局估值 将走法 对按照 新的估值排序 ，从中选择最好的B个走法对。
-
+//
 }
 
 int main()
