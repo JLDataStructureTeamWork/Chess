@@ -315,7 +315,40 @@ int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int
 }
 
 
-queue<Step> GenerateSon(int Board[19][19],int BeginX,int EndX,int BeginY,int EndY) {//产生子节点队列函数
+queue<Step> GenerateSon(int Board[19][19],int BeginX,int EndX,int BeginY,int EndY,int w,int ComputerSide) 
+{
+	//产生子节点队列函数
+	// 1.1 对所有的空点进行评估，并按照其估值大小降序排列，结果记录在表L中。
+	vector<pointincludevalue> L;
+	L= firstsection();
+ 	//1.2 从L中 取出估值最高的W个点， 即（s1，s2,s3,s4,s5..)
+ 	vector<pointincludevalue> S;
+ 	vector<vector<pointincludevalue>> Li;
+ 	vector<vector<Step>> LC;
+ 	for(int i=0;i<w;i++)
+ 	{
+	 	//3.1 在si 处放置一个棋子， 然后执行类似1的操作，重新对剩下的空点进行估值和排序，结果记录到Li的第i个单位中
+		Board[S[i].x][S[i].y]=ComputerSide;//这是一个虚拟的执行操作
+		Li[i]=firstsection();
+		//3.2 在Li中取出估值最高的wi个点， 即（si，。。。。）
+		vector<Step> LLc;
+		for(int j=0;j<w;j++)
+		{
+			//如果有重复走法，则略过
+			LLc[j].first.x=S[i].x;LLc[j].first.y=S[i].y;
+			LLc[j].second.x=Li[i][j].x;LLc[j].second.y=Li[i][j].y;
+		}
+		LC.push_back(LLc);
+ 	}
+ 	//4 按照LC的走法生成新的棋局 并对新的棋局估值 将走法 对按照 新的估值排序 ，从中选择最好的B个走法对。
+	 //这里让B等于W；
+	 queue<Step> res;
+
+	 sort();
+
+	 for(int i=0;i<w;i++)
+	 	res.push(LC[i][0]);//这里还没有写好排序函数
+	return res;
   
 }
 
@@ -346,7 +379,7 @@ int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth) {//负极大值�
   }
   return Alpha;
 }
-void firstsection()
+vector<pointincludevalue> firstsection()
 {
 	 queue<pointincludevalue> LL;
  for(int i=0;i<19;i++)
@@ -363,6 +396,28 @@ void firstsection()
  }
  sort(0,LL.size(),cmp);
 }
+
+// int MiniMax(Step* p,int depth)
+// {
+// 	queue<Step> list;
+// 	int bestvalue=0,value=0;
+// 	if(depth<=0)
+// 		return evaluation(p);
+// 	if()
+// 	else
+// 	{
+// 	}
+// 	//生成所有子节点
+// 	Step head;
+// 	list=Chosestep();
+// 	while(!list.empty())
+// 	{
+// 		head=list.front();list.pop();
+// 		value=MiniMax(head,depth-1);
+// 		if()
+// 	}
+	
+
 Step machine(int TureBoard[19][19],int ComputerSide) {
   int Board[19][19];//为了不改变主函数中的界面
   for (int i = 0; i < 19; i++) {
@@ -395,26 +450,20 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
     return NextTwoStep;//两颗棋子均确定则直接返回
   }
   //----------博弈树部分------------//
-  //对界面进行分析
- // 1.1 对所有的空点进行评估，并按照其估值大小降序排列，结果记录在表L中。
-	void firstsection();
- //1.2 从L中 取出估值最高的W个点， 即（s1，s2,s3,s4,s5..)
- vector<pointincludevalue> S;
- vector<vector<pointincludevalue>> Li;
- vector<vector<Step>> LC;
- for(int i=0;i<w;i++)
- {
-	 //3.1 在si 处放置一个棋子， 然后执行类似1的操作，重新对剩下的空点进行估值和排序，结果记录到Li中
-	Board[S[i].x][S[i].y]=ComputerSide;//这是一个虚拟的执行操作
-	firstsection();
-	//3.2 在Li中取出估值最高的wi个点， 即（si，。。。。）
-	for(int i=0;i<w;i++)
+	int w=10;
+	vector<Step> list;//生成前w个字节点
+	int bestvalue=0;int beststep=0;
+	for(int i=0;i<10;i++)
 	{
-		//放入LC中
+		if(NegaMax_AlphaBeta()>beststep)
+		{
+			beststep=i;
+			bestvalue=NegaMax_AlphaBeta();
+		}
 	}
- }
- //4 按照LC的走法生成新的棋局 并对新的棋局估值 将走法 对按照 新的估值排序 ，从中选择最好的B个走法对。
-//
+	//找到最优解
+	return list[beststep];
+	
 }
 
 int main()
