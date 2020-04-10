@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include<queue>
+#include<limits.h>
 #include<algorithm>
 #include<stdio.h>
 #include<stdlib.h>
@@ -20,6 +21,13 @@ int MoveRoadX[4] = { 0,1,1,1 };
 int MoveRoadY[4] = { 1,0,-1,1 };
 int Width;//博弈树宽度
 int Depth;//博弈树深度
+struct TreeNode {//博弈树使用的节点
+  int Board[19][19];
+  int BeginX, BeginY;
+  int EndX, EndY;
+  int value;
+  vector<TreeNode*> Son;
+};
 struct Point { //点结构
   int x, y;
 };
@@ -35,65 +43,25 @@ struct pointincludevalue
 
 int Board[19][19];//存储棋盘信息，其元素值为 BLACK, WHITE, EMPTY 之一
 //路遍历的方向参考github上"遍历顺序以及起终点方向.png"
-int ALL_EvalueFucation(int VirtualBoard[19][19],int BeginX,int EndX,int BeginY,int EndY,int ComputerSide) {//全局评价函数
+int ALL_EvalueFucation(int VirtualBoard[19][19],int ComputerSide) {//全局评价函数
   
   int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//不同棋子数的路的条数
   int NumOfEnemyRoad[7]= { 0,0,0,0,0,0,0 };
   int ScoreOfRoad[7] = {};//不同棋子数的路的分数
   
   for (int dir = 0; dir < 4; dir++) {
-    for (int i = BeginX; i <= EndX; i++) {//对每行的路进行分析
-      for (int j = BeginY; j <= EndY; j++) {
-        int num = 0;
-        int flag = 0;//flag来代表棋子颜色的变化，没有遇到棋子为0，遇到黑棋为1，遇到白棋为2，前后遇到不同色棋子则break
-        for (int k = 0; k < 6; k++) {
-          int a, b;
-          if (dir == 0) {
-            if (j + 5 > EndY) continue;
-            a = i;
-            b = j + k;
-          }
-          else if (dir == 1) {
-            if (i + 5 > EndX) continue;
-            a = i +k;
-            b = j;
-          }
-          else if (dir==2) {
-            if (i + 5 > EndX || j - 5 < BeginY) continue;
-            a = i + k;
-            b = j - k;
-          }
-          else if (dir==3) {
-            if (i + 5 > EndX || j + 5 > EndY) continue;
-            a = i + k;
-            b = j + k;
-          }
-          
-          if ((VirtualBoard[a][b] == BLACK && flag == 2) || (VirtualBoard[a][b] == WHITE && flag == 1)) {//前后棋子颜色不同则此路作废
-            flag = -1;
-            break;
-          }
-
-          if (VirtualBoard[a][b] == BLACK) {
-            flag = 1;
-            num++;
-          }
-          else if (VirtualBoard[a][b] == WHITE) {
-            flag = 2;
-            num++;
-          }
-        }
-        if (flag == 1) {
-          if (ComputerSide == BLACK)
-            NumOfMyRoad[num]++;
-          else
-            NumOfEnemyRoad[num]++;
-        }
-        else if (flag == 2) {
-          if (ComputerSide == WHITE)
-            NumOfMyRoad[num]++;
-          else
-            NumOfEnemyRoad[num]++;
+    for (int i = RangeBeginX; i <= RangeEndX; i++) {//对每行的路进行分析
+      for (int j = RangeBeginY; j <= RangeEndY; j++) {
+        int flag = 2;
+        int limit = 0;
+        Point fake;
+        fake.x = -1;
+        fake.y = 1;
+        int num = IfNot_Road(Board, i, j, flag, dir, limit, fake);
+        if (num == -1)continue;
+        if (flag == ComputerSide) NumOfMyRoad[num]++;
+        else {
+          NumOfEnemyRoad[num]++;
         }
       }
     }
@@ -321,7 +289,7 @@ queue<Step> GenerateSon(int Board[19][19],int w,int ComputerSide,int OneOrTwo_Fl
 	//产生子节点队列函数
 	// 1.1 对所有的空点进行评估，并按照其估值大小降序排列，结果记录在表L中。
 	vector<pointincludevalue> L;
-	L= firstsection();
+	//L= firstsection();
  	//1.2 从L中 取出估值最高的W个点， 即（s1，s2,s3,s4,s5..)
  	vector<pointincludevalue> S;
  	vector<vector<pointincludevalue>> Li;
@@ -330,7 +298,7 @@ queue<Step> GenerateSon(int Board[19][19],int w,int ComputerSide,int OneOrTwo_Fl
  	{
 	 	//3.1 在si 处放置一个棋子， 然后执行类似1的操作，重新对剩下的空点进行估值和排序，结果记录到Li的第i个单位中
 		Board[S[i].x][S[i].y]=ComputerSide;//这是一个虚拟的执行操作
-		Li[i]=firstsection();
+		//Li[i]=firstsection();
 		//3.2 在Li中取出估值最高的wi个点， 即（si，。。。。）
 		vector<Step> LLc;
 		for(int j=0;j<w;j++)
@@ -360,17 +328,26 @@ Step GetFrontNode(queue<Step> Son) {//得到队列头节点并pop掉
   return ReturnNode;
 }
 
-int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth) {//负极大值搜索
+int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerSide) {//负极大值搜索
   int value,BestValue = -INFINITY;
-  Step CurrentNode;
+  TreeNode *Node= (TreeNode *)malloc(sizeof(TreeNode));
   if (depth <= 0) {
-    
+    return ALL_EvalueFucation(Board,ComputerSide);
   }
-  queue<Step> Son;
-  //Son=GenerateSon();
-  while (!Son.empty()) {
-    CurrentNode = GetFrontNode(Son);
-    value = -NegaMax_AlphaBeta(CurrentNode, -Beta,-Alpha,depth - 1);//论文中的方法，简洁了代码，但没看懂(
+  queue<Step> SonQueue;
+  SonQueue=GenerateSon(Board,Width,ComputerSide,2);
+  while (!SonQueue.empty()) {
+    Step NextSonStep;
+    NextSonStep = GetFrontNode(SonQueue);
+    TreeNode *TreeSon = (TreeNode *)malloc(sizeof(TreeNode));
+    for (int i = 0; i < 19; i++) {
+      for (int j = 0; j < 19; j++) {
+        TreeSon->Board[i][j] = Node->Board[i][j];
+      }
+    }
+    TreeSon->Board[NextSonStep.first.x][NextSonStep.first.y] = ComputerSide;
+    TreeSon->Board[NextSonStep.second.x][NextSonStep.second.y] = ComputerSide;
+    value = -NegaMax_AlphaBeta(TreeSon, -Beta,-Alpha,depth - 1,ComputerSide);//论文中的方法，简洁了代码，但没看懂(
     if (value >= Alpha) {
       Alpha = value;
     }
@@ -380,43 +357,43 @@ int NegaMax_AlphaBeta(Step step, int Alpha,int Beta,int depth) {//负极大值�
   }
   return Alpha;
 }
-vector<pointincludevalue> firstsection()
-{
-	 queue<pointincludevalue> LL;
- for(int i=0;i<19;i++)
- {
-	 for(int j=0;j<19;j++)
-	 {
-		 if(Board[i][j]==EMPTY)
-		 {
-			 pointincludevalue temp;temp.x=i;temp.y=j;
-			 temp.value=evaluation(i,j,Board);
-			 LL.push(temp);
-		 }
-	 }
- }
- sort(0,LL.size(),cmp);
-}
-
-// int MiniMax(Step* p,int depth)
+//vector<pointincludevalue> firstsection()
+//{
+//	 queue<pointincludevalue> LL;
+// for(int i=0;i<19;i++)
 // {
-// 	queue<Step> list;
-// 	int bestvalue=0,value=0;
-// 	if(depth<=0)
-// 		return evaluation(p);
-// 	if()
-// 	else
-// 	{
-// 	}
-// 	//生成所有子节点
-// 	Step head;
-// 	list=Chosestep();
-// 	while(!list.empty())
-// 	{
-// 		head=list.front();list.pop();
-// 		value=MiniMax(head,depth-1);
-// 		if()
-// 	}
+//	 for(int j=0;j<19;j++)
+//	 {
+//		 if(Board[i][j]==EMPTY)
+//		 {
+//			 pointincludevalue temp;temp.x=i;temp.y=j;
+//			 temp.value=evaluation(i,j,Board);
+//			 LL.push(temp);
+//		 }
+//	 }
+// }
+// sort(0,LL.size(),cmp);
+//}
+//
+//// int MiniMax(Step* p,int depth)
+//// {
+//// 	queue<Step> list;
+//// 	int bestvalue=0,value=0;
+//// 	if(depth<=0)
+//// 		return evaluation(p);
+//// 	if()
+//// 	else
+//// 	{
+//// 	}
+//// 	//生成所有子节点
+//// 	Step head;
+//// 	list=Chosestep();
+//// 	while(!list.empty())
+//// 	{
+//// 		head=list.front();list.pop();
+//// 		value=MiniMax(head,depth-1);
+//// 		if()
+//// 	}
 	
 
 Step machine(int TureBoard[19][19],int ComputerSide) {
@@ -437,11 +414,14 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
   }
 
   Step PreSeekStep;
+  Step Current;
   int OneOrTwo_Flag = 0;//1代表一颗棋子已经确定
   PreSeekStep=PreSeek(Board, ComputerSide);//使用博弈树之前进行前期扫描，判断是否有活四活五等必须落子的情况
   if (PreSeekStep.first.x != -1) {
     NextTwoStep.first.x = PreSeekStep.first.x;
     NextTwoStep.first.y = PreSeekStep.first.y;
+    Current.first.x = PreSeekStep.first.x;
+    Current.first.y = PreSeekStep.first.y;
     Board[NextTwoStep.first.x][NextTwoStep.first.y] = ComputerSide;//把第一个棋子写入棋局
     OneOrTwo_Flag = 1;
   }
@@ -451,15 +431,21 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
     return NextTwoStep;//两颗棋子均确定则直接返回
   }
   //----------博弈树部分------------//
-  int w;
-  int max = -1;
-  int Alpha = INT16_MIN;
-  int Beta = INT16_MAX;
+
+  int Max_Score = INT_MIN;
+  int Alpha = INT_MIN;
+  int Beta =INT_MAX;
   queue<Step> ImpossibleFact;
-  ImpossibleFact=GenerateSon(Board, w, ComputerSide, OneOrTwo_Flag);
+  ImpossibleFact=GenerateSon(Board, Width, ComputerSide, OneOrTwo_Flag);
   while (!ImpossibleFact.empty()) {
-    Step Current = GetFrontNode(ImpossibleFact);
-    int temp = NegaMax_AlphaBeta(Current, Alpha, Beta, Depth);
+    Current= GetFrontNode(ImpossibleFact);
+    Board[Current.first.x][Current.first.y] = ComputerSide;
+    Board[Current.second.x][Current.second.y] = ComputerSide;
+    TreeNode *TreeNodeFather;
+    int temp = NegaMax_AlphaBeta(TreeNodeFather, Alpha, Beta, Depth,ComputerSide);
+    if (temp > Max_Score) {
+      
+    }
   }
 }
 
