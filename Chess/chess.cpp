@@ -267,18 +267,14 @@ int PartScore_EvalueFucation(int Board[19][19], Point FirstChess, Point LimitChe
 }
 int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int ComputerSide) {//
   int Score1, Score2;
-  Score1 = Board[FirstChess.x][FirstChess.y];//为了改变原数组
-  Score2 = Board[SecondChess.x][SecondChess.y];
   
+  Board[FirstChess.x][FirstChess.y] = EMPTY;//改变原数组
+  Board[SecondChess.x][SecondChess.y] = EMPTY;
   int Before=PartScore_EvalueFucation(Board, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(Board, SecondChess, FirstChess, ComputerSide, 1);
   
-  Board[FirstChess.x][FirstChess.y] = ComputerSide;//改变原数组
+  Board[FirstChess.x][FirstChess.y] = ComputerSide;//恢复原数组
   Board[SecondChess.x][SecondChess.y] = ComputerSide;
-  
   int After= PartScore_EvalueFucation(Board, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(Board, SecondChess, FirstChess, ComputerSide, 1);
-  
-  Board[FirstChess.x][FirstChess.y] = Score1;//恢复原数组
-  Board[SecondChess.x][SecondChess.y] = Score2;
   
   return After - Before;//返回局部评分
 }
@@ -329,24 +325,37 @@ Step GetFrontNode(queue<Step> Son) {//得到队列头节点并pop掉
 }
 
 int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerSide) {//负极大值搜索
-  int value,BestValue = -INFINITY;
-  TreeNode *Node= (TreeNode *)malloc(sizeof(TreeNode));
+  
+  int value;
+  int BestValue = -INFINITY;
+  
   if (depth <= 0) {
-    return ALL_EvalueFucation(Board,ComputerSide);
+    return Node->value;//返回评估值结束递归
   }
-  queue<Step> SonQueue;
+  
+  queue<Step> SonQueue;//儿子队列
   SonQueue=GenerateSon(Board,Width,ComputerSide,2);
-  while (!SonQueue.empty()) {
+  
+  while (!SonQueue.empty()) {//对每个可能的两个落子建立博弈树
     Step NextSonStep;
     NextSonStep = GetFrontNode(SonQueue);
+    
     TreeNode *TreeSon = (TreeNode *)malloc(sizeof(TreeNode));
     for (int i = 0; i < 19; i++) {
       for (int j = 0; j < 19; j++) {
         TreeSon->Board[i][j] = Node->Board[i][j];
       }
     }
+
+    Point FirstStep, SecondStep;//两步落子
+    FirstStep.x = NextSonStep.first.x; FirstStep.y = NextSonStep.first.y;
+    SecondStep.x = NextSonStep.second.x; SecondStep.y = NextSonStep.second.y;
+
     TreeSon->Board[NextSonStep.first.x][NextSonStep.first.y] = ComputerSide;
     TreeSon->Board[NextSonStep.second.x][NextSonStep.second.y] = ComputerSide;
+    TreeSon->value = Part_EvalueFucation(Node->Board,FirstStep,SecondStep,ComputerSide)+Node->value;
+    Node->Son.push_back(TreeSon);//儿子结点压入
+
     value = -NegaMax_AlphaBeta(TreeSon, -Beta,-Alpha,depth - 1,ComputerSide);//论文中的方法，简洁了代码，但没看懂(
     if (value >= Alpha) {
       Alpha = value;
@@ -375,25 +384,25 @@ int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerS
 // sort(0,LL.size(),cmp);
 //}
 //
-//// int MiniMax(Step* p,int depth)
-//// {
-//// 	queue<Step> list;
-//// 	int bestvalue=0,value=0;
-//// 	if(depth<=0)
-//// 		return evaluation(p);
-//// 	if()
-//// 	else
-//// 	{
-//// 	}
-//// 	//生成所有子节点
-//// 	Step head;
-//// 	list=Chosestep();
-//// 	while(!list.empty())
-//// 	{
-//// 		head=list.front();list.pop();
-//// 		value=MiniMax(head,depth-1);
-//// 		if()
-//// 	}
+// int MiniMax(Step* p,int depth)
+// {
+// 	queue<Step> list;
+// 	int bestvalue=0,value=0;
+// 	if(depth<=0)
+// 		return evaluation(p);
+// 	if()
+// 	else
+// 	{
+// 	}
+// 	//生成所有子节点
+// 	Step head;
+// 	list=Chosestep();
+// 	while(!list.empty())
+// 	{
+// 		head=list.front();list.pop();
+// 		value=MiniMax(head,depth-1);
+// 		if()
+// 	}
 	
 
 Step machine(int TureBoard[19][19],int ComputerSide) {
@@ -416,7 +425,9 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
   Step PreSeekStep;
   Step Current;
   int OneOrTwo_Flag = 0;//1代表一颗棋子已经确定
+
   PreSeekStep=PreSeek(Board, ComputerSide);//使用博弈树之前进行前期扫描，判断是否有活四活五等必须落子的情况
+  
   if (PreSeekStep.first.x != -1) {
     NextTwoStep.first.x = PreSeekStep.first.x;
     NextTwoStep.first.y = PreSeekStep.first.y;
@@ -433,20 +444,40 @@ Step machine(int TureBoard[19][19],int ComputerSide) {
   //----------博弈树部分------------//
 
   int Max_Score = INT_MIN;
-  int Alpha = INT_MIN;
-  int Beta =INT_MAX;
-  queue<Step> ImpossibleFact;
+
+  Step ReturnStep;//返回值初始化
+  ReturnStep.first.x = -1; ReturnStep.first.y = -1;
+  ReturnStep.second.x = -1; ReturnStep.second.y = -1;
+  
+  queue<Step> ImpossibleFact;//根节点儿子队列
   ImpossibleFact=GenerateSon(Board, Width, ComputerSide, OneOrTwo_Flag);
-  while (!ImpossibleFact.empty()) {
+  while (!ImpossibleFact.empty()) {//把所有可能的第一层的下子情况，进行NegaMax估值
+    int Alpha = INT_MIN;
+    int Beta = INT_MAX;
     Current= GetFrontNode(ImpossibleFact);
-    Board[Current.first.x][Current.first.y] = ComputerSide;
+
+    Board[Current.first.x][Current.first.y] = ComputerSide;//落两子
     Board[Current.second.x][Current.second.y] = ComputerSide;
-    TreeNode *TreeNodeFather;
-    int temp = NegaMax_AlphaBeta(TreeNodeFather, Alpha, Beta, Depth,ComputerSide);
-    if (temp > Max_Score) {
-      
+    
+    TreeNode *Node = (TreeNode *)malloc(sizeof(TreeNode));//根节点
+    
+    for (int i = 0; i < 19; i++) {
+      for (int j = 0; j < 19; j++) {
+        Node->Board[i][j] = Board[i][j];
+      }
     }
+    Node->value = ALL_EvalueFucation(Node->Board, ComputerSide);
+    int temp = NegaMax_AlphaBeta(Node, Alpha, Beta, Depth,ComputerSide);//得到根节点评分
+    if (temp > Max_Score) {
+      ReturnStep.first.x = Current.first.x;//保留目前分数最高的两个落子
+      ReturnStep.first.y = Current.first.y;
+      ReturnStep.second.x = Current.second.x;
+      ReturnStep.second.y = Current.second.y;
+    }
+    Board[Current.first.x][Current.first.y] = EMPTY;//恢复棋盘
+    Board[Current.second.x][Current.second.y] = EMPTY;
   }
+  return ReturnStep;//返回两个落子
 }
 
 int main()
