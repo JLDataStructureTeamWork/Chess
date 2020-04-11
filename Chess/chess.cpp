@@ -34,11 +34,11 @@ struct pointincludevalue
 	int value;
 };
 struct TreeNode {//博弈树使用的节点
-  vector<Point>ComputerChess;//当前界面
-  vector<Point>EmemyChess;
-  int BeginX, BeginY;
+  vector<Point>ComputerChess;//我方落子情况
+  vector<Point>EnemyChess;//敌方落子情况
+  int BeginX, BeginY;//范围
   int EndX, EndY;
-  int value;
+  int value;//当前界面评分
   vector<TreeNode*> Son;
 };
 
@@ -54,14 +54,14 @@ int IfNot_Road(int Board[19][19], int RangeBeginX, int RangeBeginY, int RangeEnd
     a = BeginX + i * MoveRoadX[dir];//不同的方向
     b = BeginY + i * MoveRoadY[dir];
     if (limit == 1 && LimitChess.x == a && LimitChess.y == b) return -1;//避免评价函数中重复评价路使用
-    if (Board[a][b] == EMPTY) continue;
-    if (Board[a][b] == BLACK && flag == 1) return -1;//返回-1代表不是路
-    if (Board[a][b] == WHITE && flag == 0) return -1;
-    if (Board[a][b] == BLACK) {
+    else if (Board[a][b] == EMPTY) continue;
+    else if (Board[a][b] == BLACK && flag == 1) return -1;//返回-1代表不是路
+    else if (Board[a][b] == WHITE && flag == 0) return -1;
+    else if (Board[a][b] == BLACK) {
       num++;
       flag = 0;
     }
-    if (Board[a][b] == WHITE) {
+    else if (Board[a][b] == WHITE) {
       num++;
       flag = 1;
     }
@@ -170,7 +170,7 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int RangeBeginX, int RangeBeginY, in
     int num1 = IfNot_Road(Board, RangeBeginX,  RangeBeginY,RangeEndX, RangeEndY, FirstNotEmpty.x,  FirstNotEmpty.y,flag, dir,limit,Fake);
     int num2 = IfNot_Road(Board, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY, LastNotEmpty.x-5*MoveRoadX[dir],LastNotEmpty.y-5*MoveRoadY[dir], flag, dir, limit, Fake);
     
-    if (num1 >= 4||num2 >= 4) {
+    if (num1 >= 4||num2 >= 4) {//从第一个结点正向遍历、从最后一个结点反向遍历
       Point FindSecondChess;
       if (num1 >= 4) {
         FindSecondChess.x = FirstNotEmpty.x;
@@ -353,25 +353,34 @@ Step GetFrontNode(queue<Step> Son) {//得到队列头节点并pop掉
 }
 
 int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerSide) {//负极大值搜索
-  int Board[19][19];
+  
+  int NegaBoard[19][19];//当前父节点界面
+  
   int EnemySide;//敌人的颜色
   if (ComputerSide == BLACK)EnemySide = WHITE;
   else EnemySide = BLACK;
+
+  for (int i = 0; i < 19; i++) {//数组初始化
+    for (int j = 0; j < 19; j++) {
+      NegaBoard[i][j] = EMPTY;
+    }
+  }
   for (int i = 0; i < Node->ComputerChess.size(); i++) {
-    Board[Node->ComputerChess[i].x][Node->ComputerChess[i].y] = ComputerSide;
+    NegaBoard[Node->ComputerChess[i].x][Node->ComputerChess[i].y] = ComputerSide;
   }
-  for (int i = 0; i < Node->EmemyChess.size(); i++) {
-    Board[Node->EmemyChess[i].x][Node->EmemyChess[i].y] = EnemySide;
+  for (int i = 0; i < Node->EnemyChess.size(); i++) {
+    NegaBoard[Node->EnemyChess[i].x][Node->EnemyChess[i].y] = EnemySide;
   }
+  
   int value;
-  int BestValue = -INFINITY;
+  int BestValue = -INT_MAX;
   
   if (depth <= 0) {
     return Node->value;//返回评估值结束递归
   }
   
   queue<Step> SonQueue;//儿子队列
-  SonQueue=GenerateSon(Board,Width,ComputerSide,2);
+  SonQueue=GenerateSon(NegaBoard,Width,ComputerSide,2);//通过父节点的界面来生成儿子结点
   
   while (!SonQueue.empty()) {//对每个可能的两个落子建立博弈树
     Step NextSonStep;
@@ -379,18 +388,19 @@ int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerS
     
     TreeNode *TreeSon = (TreeNode *)malloc(sizeof(TreeNode));
     TreeSon->ComputerChess.assign(Node->ComputerChess.begin(), Node->ComputerChess.end());
-    TreeSon->ComputerChess.assign(Node->EmemyChess.begin(), Node->EmemyChess.end());
+    TreeSon->EnemyChess.assign(Node->EnemyChess.begin(), Node->EnemyChess.end());
 
     Point FirstStep, SecondStep;//两步落子
     TreeSon->ComputerChess.push_back(FirstStep);
     TreeSon->ComputerChess.push_back(SecondStep);
 
-    Board[FirstStep.x][FirstStep.y] = ComputerSide;
-    Board[SecondStep.x][SecondStep.y] = ComputerSide;
+    NegaBoard[FirstStep.x][FirstStep.y] = ComputerSide;//儿子结点界面
+    NegaBoard[SecondStep.x][SecondStep.y] = ComputerSide;
     
-    TreeSon->value = Part_EvalueFucation(Board,FirstStep,SecondStep,ComputerSide)+Node->value;//评分
-    Board[FirstStep.x][FirstStep.y] = EMPTY;
-    Board[SecondStep.x][SecondStep.y] = EMPTY;
+    TreeSon->value = Part_EvalueFucation(NegaBoard,FirstStep,SecondStep,ComputerSide)+Node->value;//评分
+    
+    NegaBoard[FirstStep.x][FirstStep.y] = EMPTY;//恢复，以便下一个儿子使用
+    NegaBoard[SecondStep.x][SecondStep.y] = EMPTY;
     Node->Son.push_back(TreeSon);//儿子结点压入
     value = -NegaMax_AlphaBeta(TreeSon, -Beta,-Alpha,depth - 1,ComputerSide);//论文中的方法，简洁了代码，但没看懂(
     if (value >= Alpha) {
@@ -498,7 +508,7 @@ Step machine(int ComputerSide) {
         Chess.x = i; Chess.y = j;
         if (Board[i][j] == EMPTY) continue;
         else if (Board[i][j] == ComputerSide) Node->ComputerChess.push_back(Chess);
-        else if (Board[i][j] == EnemySide) Node->EmemyChess.push_back(Chess);
+        else if (Board[i][j] == EnemySide) Node->EnemyChess.push_back(Chess);
       }
     }
     Node->value = ALL_EvalueFucation(Board, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY,ComputerSide);
