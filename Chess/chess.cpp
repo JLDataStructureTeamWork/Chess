@@ -19,8 +19,6 @@ int MoveRoadY[4] = { 1,0,-1,1 };
 int Width;//博弈树宽度
 int Depth;//博弈树深度
 
-
-
 struct Point { //点结构
   int x, y;
 };
@@ -39,17 +37,20 @@ struct TreeNode {//博弈树使用的节点
   int BeginX, BeginY;//范围
   int EndX, EndY;
   int value;//当前界面评分
-  vector<TreeNode*> Son;
+  vector<TreeNode*> Son;//儿子节点
 };
 
 int Board[19][19];//存储棋盘信息，其元素值为 BLACK, WHITE, EMPTY 之一、路遍历的方向参考github上"遍历顺序以及起终点方向.png"
                   
 int IfNot_Road(int Board[19][19], int RangeBeginX, int RangeBeginY, int RangeEndX, int RangeEndY, int BeginX, int BeginY, int &flag, int dir, int limit, Point LimitChess) {//判断是否是一条路
   int num = 0;//如果是路，其中的棋子个数
+  
   if (BeginX < RangeBeginX || BeginX >RangeEndX || BeginX + 5 * MoveRoadX[dir] < RangeBeginX || BeginX + 5 * MoveRoadX[dir] > RangeEndX) return -1;//以搜索范围内所有格子为起点，扩大了搜索范围
   if (BeginY < RangeBeginY || BeginY >RangeEndY || BeginY + 5 * MoveRoadX[dir]< RangeBeginY || BeginY + 5 * MoveRoadX[dir] >RangeEndY) return -1;//增加本函数形参RangeBeginX/Y、RangeEndX/Y,目前的EndBegin是路的起点终点
   //2代表还未遇到棋子，1白子，0黑子。
-  int a = BeginX, b = BeginY;
+  
+  int a;
+  int b;
   for (int i = 0; i < 6; i++) {
     a = BeginX + i * MoveRoadX[dir];//不同的方向
     b = BeginY + i * MoveRoadY[dir];
@@ -82,7 +83,7 @@ int ALL_EvalueFucation(int VirtualBoard[19][19], int RangeBeginX,int RangeBeginY
         int limit = 0;
         
         Point fake;//假的，只为了填补形参，可以忽略
-        fake.x = -1;fake.y = 1;
+        fake.x = -1;fake.y = -1;
         
         int num = IfNot_Road(VirtualBoard,RangeBeginX, RangeBeginY, RangeEndX, RangeEndY, i, j, flag, dir, limit, fake);
         if (num == -1)continue;
@@ -94,7 +95,7 @@ int ALL_EvalueFucation(int VirtualBoard[19][19], int RangeBeginX,int RangeBeginY
   }
   int Score=0;
   for (int i = 0; i < 7; i++) {
-    Score += NumOfMyRoad[i] * ScoreOfRoad[i] - NumOfEnemyRoad[i] * ScoreOfRoad[i];
+    Score += NumOfMyRoad[i] * ScoreOfRoad[i] - NumOfEnemyRoad[i] * ScoreOfRoad[i];//计算分数
   }
   return Score;
 }
@@ -107,7 +108,8 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int RangeBeginX, int RangeBeginY, in
   ReturnEmpty.second.x = -1;
   ReturnEmpty.second.y = -1;
   
-  int a = BeginX, b = BeginY;
+  int a;
+  int b;
   if (WillWin) {//己方已经形成连四连五的路,直接返回空的位置下子，可直接获胜
     for (int i = 0; i < 6; i++) {
       a = BeginX + i * MoveRoadX[dir];
@@ -128,7 +130,8 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int RangeBeginX, int RangeBeginY, in
   }
   else {//敌方形成连四连五的情况 
     int FirstNotEmptyFlag = 0;
-    Point FirstNotEmpty,LastNotEmpty;
+    Point FirstNotEmpty;//第一个棋子的位置
+    Point LastNotEmpty;//最后一个棋子的位置
     for (int i = 0; i < 6; i++) {//找第一个空位置，且与敌方子相邻。
       a = BeginX + i * MoveRoadX[dir];
       b = BeginY + i * MoveRoadY[dir];
@@ -151,13 +154,13 @@ Step PreSeek_ReturnEmpty(int Board[19][19], int RangeBeginX, int RangeBeginY, in
         FirstNotEmpty.x = a;
         FirstNotEmpty.y = b;
       }
-      if (Board[a][b] != EMPTY && FirstNotEmptyFlag == 0) {
+      if (Board[a][b] != EMPTY) {
         LastNotEmpty.x = a;
         LastNotEmpty.y = b;
       }
     }
 
-    int OriginColor = Board[ReturnEmpty.first.x][ReturnEmpty.first.y];//暂时改变board
+    int OriginColor = Board[ReturnEmpty.first.x][ReturnEmpty.first.y];//暂时改变board，模拟之前只落一子的情况
     Board[ReturnEmpty.first.x][ReturnEmpty.first.y] = ComputerSide;
     
     int flag = 2;
@@ -213,13 +216,15 @@ Step PreSeek(int Board[19][19],int RangeBeginX, int RangeBeginY, int RangeEndX, 
   for (int i = RangeBeginX; i <= RangeEndX; i++) {//以目前搜索范围内所有格子为起点
     for (int j = RangeBeginY; j <= RangeEndY; j++) {
       for (int dir = 0; dir < 4; dir++) {//一个起点有四个方向
+        
         int num = 0;
         int flag = 2;
+        int limit = 0;
         Point Fake;
         Fake.x = -1;
         Fake.y = -1;
 
-        num = IfNot_Road(Board,  RangeBeginX, RangeBeginY,  RangeEndX, RangeEndY, i, j,flag, dir,0,Fake);
+        num = IfNot_Road(Board,  RangeBeginX, RangeBeginY,  RangeEndX, RangeEndY, i, j,flag, dir,limit,Fake);
         if (num == -1||num<4) continue;
         
         int WillWin;
@@ -261,14 +266,15 @@ void BoardRange(int Board[19][19],int &RangeBeginX, int &RangeBeginY,int &RangeE
 }
 
 int PartScore_EvalueFucation(int Board[19][19],int  RangeBeginX,int RangeBeginY,int RangeEndX,int RangeEndY, Point FirstChess, Point LimitChess,int ComputerSide,int limit) {
-  int sum = 0;                                            //如果Firstchess不为空，board中有FirstChess的标记
+  int sum = 0;                           //如果Firstchess不为空，board中有FirstChess的标记
+  
   int NumOfMyRoad[7] = { 0,0,0,0,0,0,0 };//不同棋子数的路的条数
   int NumOfEnemyRoad[7] = { 0,0,0,0,0,0,0 };
+  
   int ScoreOfRoad[7] = {};//不同棋子数的路的分数!!!
-  int MoveRoadX[4] = { 0,1,1,1 };
-  int MoveRoadY[4] = { 1,0,-1,1 };
+
   for (int dir = 0; dir < 4; dir++) {
-    for (int i = 0; i < 6; i++) {//行上的路
+    for (int i = 0; i < 6; i++) {
       Point Begin;
       Begin.y = FirstChess.y - i * MoveRoadY[dir];//定起点，与正常路遍历的方向相反
       Begin.x = FirstChess.x - i * MoveRoadX[dir];
@@ -291,12 +297,14 @@ int PartScore_EvalueFucation(int Board[19][19],int  RangeBeginX,int RangeBeginY,
   }
   return score;
 }
-int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int ComputerSide) {//
+int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int ComputerSide) {//这两个棋子已经填入了board
   int Score1, Score2;
+  
   int RangeBeginX = 20; int RangeBeginY = 20;//目前搜索范围初始化
   int RangeEndX = -1; int RangeEndY = -1;
   
   BoardRange(Board, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY);//首先探明界面范围
+  
   Board[FirstChess.x][FirstChess.y] = EMPTY;//改变原数组
   Board[SecondChess.x][SecondChess.y] = EMPTY;
   int Before=PartScore_EvalueFucation(Board, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY, FirstChess, SecondChess, ComputerSide, 0) + PartScore_EvalueFucation(Board, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY, SecondChess, FirstChess, ComputerSide, 1);
@@ -373,14 +381,16 @@ int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerS
   }
   
   int value;
-  int BestValue = -INT_MAX;
   
   if (depth <= 0) {
-    return Node->value;//返回评估值结束递归
+    int RangeBeginX = 20; int RangeBeginY = 20;//目前搜索范围初始化
+    int RangeEndX = -1; int RangeEndY = -1;
+    BoardRange(Board, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY);//首先探明界面范围
+    return ALL_EvalueFucation(NegaBoard, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY, ComputerSide);//返回评估值结束递归
   }
   
   queue<Step> SonQueue;//儿子队列
-  SonQueue=GenerateSon(NegaBoard,Width,ComputerSide,2);//通过父节点的界面来生成儿子结点
+  SonQueue=GenerateSon(Board,Width,ComputerSide,2);//通过父节点的界面来生成儿子结点
   
   while (!SonQueue.empty()) {//对每个可能的两个落子建立博弈树
     Step NextSonStep;
@@ -397,12 +407,11 @@ int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerS
     NegaBoard[FirstStep.x][FirstStep.y] = ComputerSide;//儿子结点界面
     NegaBoard[SecondStep.x][SecondStep.y] = ComputerSide;
     
-    TreeSon->value = Part_EvalueFucation(NegaBoard,FirstStep,SecondStep,ComputerSide)+Node->value;//评分
-    
     NegaBoard[FirstStep.x][FirstStep.y] = EMPTY;//恢复，以便下一个儿子使用
     NegaBoard[SecondStep.x][SecondStep.y] = EMPTY;
-    Node->Son.push_back(TreeSon);//儿子结点压入
+    
     value = -NegaMax_AlphaBeta(TreeSon, -Beta,-Alpha,depth - 1,ComputerSide);//论文中的方法，简洁了代码，但没看懂(
+    
     if (value >= Alpha) {
       Alpha = value;
     }
@@ -565,10 +574,8 @@ int main()
         /**********生成第一手着法，并保存在step结构中，落子坐标为(step.first.x,step.first.y)**********/
         /****************************在下方填充代码，并替换我的示例代码******************************/
 
-
         step.first.x = 9;
         step.first.y = 9;
-
 
         /******************************在上面填充第一步行棋代码*******************************************/
 
