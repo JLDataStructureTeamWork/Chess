@@ -18,7 +18,7 @@ int MoveRoadX[4] = { 0,1,1,1 };//遍历坐标移动数组
 int MoveRoadY[4] = { 1,0,-1,1 };
 int Width;//博弈树宽度
 int Depth;//博弈树深度
-
+int FirstGet = 0;//==1 代表preseek已经找到一个迫著点
 struct Point { //点结构
   int x, y;
 };
@@ -26,19 +26,28 @@ struct Step { //步结构
   Point first, second;
   int value;
 };
-struct pointincludevalue
-{
-	int x,y;
-	int value;
+struct PointQueue {
+  int x, y;
+  int value;
+  bool operator <(const PointQueue &a)const {//先弹出小的value
+    return value > a.value;
+  }
+};
+struct StepQueue { //步结构
+  Point first, second;
+  int value;
+  bool operator <(const StepQueue &a)const {//先弹出小的value
+    return value > a.value;
+  }  
 };
 struct TreeNode {//博弈树使用的节点
   vector<Point>ComputerChess;//我方落子情况
   vector<Point>EnemyChess;//敌方落子情况
   int BeginX, BeginY;//范围
   int EndX, EndY;
-  int value;//当前界面评分
-  vector<TreeNode*> Son;//儿子节点
+  int Color;//1代表自己，0代表敌方
 };
+Point First;//迫著点
 
 int Board[19][19];//存储棋盘信息，其元素值为 BLACK, WHITE, EMPTY 之一、路遍历的方向参考github上"遍历顺序以及起终点方向.png"
                   
@@ -51,6 +60,7 @@ int IfNot_Road(int Board[19][19], int RangeBeginX, int RangeBeginY, int RangeEnd
   
   int a;
   int b;
+
   for (int i = 0; i < 6; i++) {
     a = BeginX + i * MoveRoadX[dir];//不同的方向
     b = BeginY + i * MoveRoadY[dir];
@@ -316,42 +326,6 @@ int Part_EvalueFucation(int Board[19][19],Point FirstChess,Point SecondChess,int
   return After - Before;//返回局部评分
 }
 
-queue<Step> GenerateSon(int Board[19][19],int w,int ComputerSide,int OneOrTwo_Flag) //选择一个结点还是两个结点
-{
-	//产生子节点队列函数
-	// 1.1 对所有的空点进行评估，并按照其估值大小降序排列，结果记录在表L中。
-	vector<pointincludevalue> L;
-	//L= firstsection();
- 	//1.2 从L中 取出估值最高的W个点， 即（s1，s2,s3,s4,s5..)
- 	vector<pointincludevalue> S;
- 	vector<vector<pointincludevalue>> Li;
- 	vector<vector<Step>> LC;
- 	for(int i=0;i<w;i++)
- 	{
-	 	//3.1 在si 处放置一个棋子， 然后执行类似1的操作，重新对剩下的空点进行估值和排序，结果记录到Li的第i个单位中
-		Board[S[i].x][S[i].y]=ComputerSide;//这是一个虚拟的执行操作
-		//Li[i]=firstsection();
-		//3.2 在Li中取出估值最高的wi个点， 即（si，。。。。）
-		vector<Step> LLc;
-		for(int j=0;j<w;j++)
-		{
-			//如果有重复走法，则略过
-			LLc[j].first.x=S[i].x;LLc[j].first.y=S[i].y;
-			LLc[j].second.x=Li[i][j].x;LLc[j].second.y=Li[i][j].y;
-		}
-		LC.push_back(LLc);
- 	}
- 	//4 按照LC的走法生成新的棋局 并对新的棋局估值 将走法 对按照 新的估值排序 ，从中选择最好的B个走法对。
-	 //这里让B等于W；
-	 queue<Step> res;
-
-	 //sort();
-
-	 for(int i=0;i<w;i++)
-	 	res.push(LC[i][0]);//这里还没有写好排序函数
-	return res;
-  
-}
 
 Step GetFrontNode(queue<Step> Son) {//得到队列头节点并pop掉
   Step ReturnNode;
@@ -359,7 +333,114 @@ Step GetFrontNode(queue<Step> Son) {//得到队列头节点并pop掉
   Son.pop();
   return ReturnNode;
 }
+queue<Step>GeneraSon(int Board[19][19], int  RangeBeginX, int RangeBeginY, int RangeEndX, int RangeEndY, int ComputerSide, int SeekOne, int MaxSelf) {
+  int EnemySide;//敌人的颜色
+  if (ComputerSide == BLACK)EnemySide = WHITE;
+  else EnemySide = BLACK;
 
+  queue<Step> GeneraSonReturn;
+  priority_queue <PointQueue> FindPoint;//先找点
+  priority_queue<StepQueue> FindStep;//找两个点
+  
+  PointQueue FirstChessQueue;//存入优先队列的结点
+  StepQueue TwoChessQueue;//存入队列的结点
+ 
+  int NumFindPoint = 0;
+  int NumFindStep = 0;
+
+  for (int i = RangeBeginX; i <= RangeEndX; i++) {
+    for (int j = RangeBeginY; j <= RangeEndY; j++) {
+      
+      if (Board[i][j] != EMPTY) continue;//非空点直接舍弃
+      
+      if(MaxSelf) Board[i][j] = ComputerSide;//模拟下子
+      else Board[i][j] = EnemySide;
+      
+      Point FirstChess;
+      FirstChess.x = i;
+      FirstChess.y = j;
+      
+      
+
+      int score = Part_EvalueFucation(Board, FirstChess, FirstChess, ComputerSide);//局部评价函数
+      
+      Board[i][j] = EMPTY;//恢复棋盘
+      FirstChessQueue.x = i;
+      FirstChessQueue.y = j;
+      if (MaxSelf == 0) {
+        score = score * (-1);//找敌方的点，则需要弹出最大的点，取相反数
+      }
+      FirstChessQueue.value = score;
+
+      if (NumFindPoint >= Width) {//当超过Width个数的时候
+        int TempValue=FindPoint.top().value;
+        if (TempValue < score) continue;
+        FindPoint.pop();
+      }
+      FindPoint.push(FirstChessQueue);
+
+      NumFindPoint++;
+    }
+  }
+  if (SeekOne) {//有一个迫著点的情况
+    while (!FindPoint.empty()) {
+      Step ReturnStep;
+      ReturnStep.first.x = First.x;
+      ReturnStep.first.y = First.y;
+      ReturnStep.second.x = FindPoint.top().x;
+      ReturnStep.second.y = FindPoint.top().y;
+      GeneraSonReturn.push(ReturnStep);//压入返回队列
+      FindPoint.pop();
+    }
+    return GeneraSonReturn;
+  }
+  while (!FindPoint.empty()) {//没有迫著点
+    int a = FindPoint.top().x;//前Width个点
+    int b = FindPoint.top().y;
+    FindPoint.pop();
+    
+    Point FirstChess, SecondChess;//两个落子，用于局部评估
+    FirstChess.x = a;
+    FirstChess.y = b;
+    
+
+    if(MaxSelf) Board[a][b] = ComputerSide;//模拟落点
+    else Board[a][b] = ComputerSide;
+
+    for (int i = RangeBeginX; i <= RangeEndX; i++) {
+      for (int j = RangeBeginY; j <= RangeEndY; j++) {
+        if (Board[i][j] != EMPTY) continue;
+        
+        SecondChess.x = i;
+        SecondChess.y = j;
+
+        if (MaxSelf) Board[i][j] = ComputerSide;//模拟落点
+        else Board[i][j] = ComputerSide;
+        
+        int score = Part_EvalueFucation(Board, FirstChess, SecondChess, ComputerSide);
+        if (MaxSelf == 0) score = score * (-1);
+        if (NumFindStep >= Width) {//队列满了的处理
+          int CurrentValue=FindStep.top().value;
+          if (CurrentValue < score) continue;
+          FindStep.pop();
+        }
+        TwoChessQueue.first.x = a; TwoChessQueue.second.x = i;//压入返回队列
+        TwoChessQueue.first.y = b; TwoChessQueue.second.y = j;
+        FindStep.push(TwoChessQueue);
+      }
+    }
+  }
+  while (!FindStep.empty()) {
+    Step ReturnStep;
+    ReturnStep.first.x = FindStep.top().first.x;
+    ReturnStep.first.y = FindStep.top().first.y;
+    ReturnStep.second.x = FindStep.top().second.x;
+    ReturnStep.second.y = FindStep.top().second.y;
+    GeneraSonReturn.push(ReturnStep);
+    FindStep.pop();
+  }
+  return GeneraSonReturn;
+}
 int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerSide) {//负极大值搜索
   
   int NegaBoard[19][19];//当前父节点界面
@@ -390,7 +471,8 @@ int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerS
   }
   
   queue<Step> SonQueue;//儿子队列
-  SonQueue=GenerateSon(Board,Width,ComputerSide,2);//通过父节点的界面来生成儿子结点
+  
+  SonQueue=GeneraSon(Board,Node->BeginX,Node->BeginY,Node->EndX,Node->EndY,ComputerSide,0,Node->Color);//通过父节点的界面来生成儿子结点
   
   while (!SonQueue.empty()) {//对每个可能的两个落子建立博弈树
     Step NextSonStep;
@@ -399,19 +481,15 @@ int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerS
     TreeNode *TreeSon = (TreeNode *)malloc(sizeof(TreeNode));
     TreeSon->ComputerChess.assign(Node->ComputerChess.begin(), Node->ComputerChess.end());
     TreeSon->EnemyChess.assign(Node->EnemyChess.begin(), Node->EnemyChess.end());
+    if (Node->Color == 1) TreeSon->Color = 0;
+    else TreeSon->Color = 1;
 
     Point FirstStep, SecondStep;//两步落子
     TreeSon->ComputerChess.push_back(FirstStep);
     TreeSon->ComputerChess.push_back(SecondStep);
+    
+    value = -NegaMax_AlphaBeta(TreeSon, -Beta, -Alpha, depth - 1, ComputerSide);//论文中的方法，简洁了代码，但没看懂(
 
-    NegaBoard[FirstStep.x][FirstStep.y] = ComputerSide;//儿子结点界面
-    NegaBoard[SecondStep.x][SecondStep.y] = ComputerSide;
-    
-    NegaBoard[FirstStep.x][FirstStep.y] = EMPTY;//恢复，以便下一个儿子使用
-    NegaBoard[SecondStep.x][SecondStep.y] = EMPTY;
-    
-    value = -NegaMax_AlphaBeta(TreeSon, -Beta,-Alpha,depth - 1,ComputerSide);//论文中的方法，简洁了代码，但没看懂(
-    
     if (value >= Alpha) {
       Alpha = value;
     }
@@ -421,44 +499,6 @@ int NegaMax_AlphaBeta(TreeNode *Node, int Alpha,int Beta,int depth,int ComputerS
   }
   return Alpha;
 }
-//vector<pointincludevalue> firstsection()
-//{
-//	 queue<pointincludevalue> LL;
-// for(int i=0;i<19;i++)
-// {
-//	 for(int j=0;j<19;j++)
-//	 {
-//		 if(Board[i][j]==EMPTY)
-//		 {
-//			 pointincludevalue temp;temp.x=i;temp.y=j;
-//			 temp.value=evaluation(i,j,Board);
-//			 LL.push(temp);
-//		 }
-//	 }
-// }
-// sort(0,LL.size(),cmp);
-//}
-//
-// int MiniMax(Step* p,int depth)
-// {
-// 	queue<Step> list;
-// 	int bestvalue=0,value=0;
-// 	if(depth<=0)
-// 		return evaluation(p);
-// 	if()
-// 	else
-// 	{
-// 	}
-// 	//生成所有子节点
-// 	Step head;
-// 	list=Chosestep();
-// 	while(!list.empty())
-// 	{
-// 		head=list.front();list.pop();
-// 		value=MiniMax(head,depth-1);
-// 		if()
-// 	}
-	
 
 Step machine(int ComputerSide) {
   
@@ -468,23 +508,22 @@ Step machine(int ComputerSide) {
 
   Step NextTwoStep;
 
-  int RangeBeginX = 20;int RangeBeginY = 20;//目前搜索范围初始化
-  int RangeEndX = -1;int RangeEndY = -1;
-  BoardRange(Board,RangeBeginX, RangeBeginY, RangeEndX,RangeEndY);//首先探明界面范围
+  int RangeBeginX = 20; int RangeBeginY = 20;//目前搜索范围初始化
+  int RangeEndX = -1; int RangeEndY = -1;
+  BoardRange(Board, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY);//首先探明界面范围
 
   Step PreSeekStep;
   Step Current;
-  int OneOrTwo_Flag = 0;//1代表一颗棋子已经确定
-
+ 
   PreSeekStep=PreSeek(Board, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY, ComputerSide);//使用博弈树之前进行前期扫描，判断是否有活四活五等必须落子的情况
   
   if (PreSeekStep.first.x != -1) {
     NextTwoStep.first.x = PreSeekStep.first.x;
     NextTwoStep.first.y = PreSeekStep.first.y;
-    Current.first.x = PreSeekStep.first.x;
-    Current.first.y = PreSeekStep.first.y;
+    First.x = PreSeekStep.first.x;//全局迫著点
+    First.y = PreSeekStep.first.y;
     Board[NextTwoStep.first.x][NextTwoStep.first.y] = ComputerSide;//把第一个棋子写入棋局
-    OneOrTwo_Flag = 1;
+    FirstGet = 1;
   }
   if (PreSeekStep.second.x != -1) {
     NextTwoStep.second.x = PreSeekStep.second.x;
@@ -500,7 +539,7 @@ Step machine(int ComputerSide) {
   ReturnStep.second.x = -1; ReturnStep.second.y = -1;
   
   queue<Step> ImpossibleFact;//根节点儿子队列
-  ImpossibleFact=GenerateSon(Board, Width, ComputerSide, OneOrTwo_Flag);
+  ImpossibleFact=GeneraSon(Board, RangeBeginX,RangeBeginY,RangeEndX,RangeEndY,ComputerSide,FirstGet,1);
   while (!ImpossibleFact.empty()) {//把所有可能的第一层的下子情况，进行NegaMax估值
     int Alpha = INT_MIN;
     int Beta = INT_MAX;
@@ -520,7 +559,11 @@ Step machine(int ComputerSide) {
         else if (Board[i][j] == EnemySide) Node->EnemyChess.push_back(Chess);
       }
     }
-    Node->value = ALL_EvalueFucation(Board, RangeBeginX, RangeBeginY, RangeEndX, RangeEndY,ComputerSide);
+
+    Node->BeginX = RangeBeginX; Node->BeginY = RangeBeginY;
+    Node->EndX = RangeEndX; Node->EndY = RangeEndY;
+    Node->Color = 1;//自己
+
     int temp = NegaMax_AlphaBeta(Node, Alpha, Beta, Depth,ComputerSide);//得到根节点评分
     if (temp > Max_Score) {
       ReturnStep.first.x = Current.first.x;//保留目前分数最高的两个落子
